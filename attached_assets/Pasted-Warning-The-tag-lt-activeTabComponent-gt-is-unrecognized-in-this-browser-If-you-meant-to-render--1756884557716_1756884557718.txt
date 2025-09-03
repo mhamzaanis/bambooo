@@ -1,0 +1,28 @@
+Warning: The tag &lt;activeTabComponent&gt; is unrecognized in this browser. If you meant to render a React component, start its name with an uppercase letter.
+    at activeTabComponent
+    at div
+    at div
+    at div
+    at div
+    at EmployeeDashboard (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/src/pages/employee-dashboard.tsx:47:37)
+    at Route (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=51891f0a:323:16)
+    at Switch (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=51891f0a:379:17)
+    at Router
+    at Provider (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MAE4WKEQ.js?v=874c60e4:38:15)
+    at TooltipProvider (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=fcaf6c8d:59:5)
+    at QueryClientProvider (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=596aa441:2805:3)
+    at App
+Warning: React does not recognize the &#x60;employeeId&#x60; prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase &#x60;employeeid&#x60; instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+    at activeTabComponent
+    at div
+    at div
+    at div
+    at div
+    at EmployeeDashboard (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/src/pages/employee-dashboard.tsx:47:37)
+    at Route (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=51891f0a:323:16)
+    at Switch (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=51891f0a:379:17)
+    at Router
+    at Provider (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MAE4WKEQ.js?v=874c60e4:38:15)
+    at TooltipProvider (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=fcaf6c8d:59:5)
+    at QueryClientProvider (https://695bd685-61c5-4c7d-8335-2f59b0c1e711-00-1fnkiuo7ttd9i.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=596aa441:2805:3)
+    at App

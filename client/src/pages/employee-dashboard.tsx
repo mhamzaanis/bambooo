@@ -38,7 +38,7 @@ export default function EmployeeDashboard() {
     queryKey: ["/api/employees", DEFAULT_EMPLOYEE_ID],
   });
 
-  const activeTabComponent = tabs.find(tab => tab.id === activeTab)?.component;
+  const ActiveTabComponent = tabs.find(tab => tab.id === activeTab)?.component;
   const visibleTabs = tabs.filter(tab => enabledTabs.includes(tab.id));
 
   if (isLoading) {
@@ -121,8 +121,8 @@ export default function EmployeeDashboard() {
 
           {/* Tab Content */}
           <div className="p-6">
-            {activeTabComponent && (
-              <activeTabComponent employeeId={employee.id} />
+            {ActiveTabComponent && (
+              <ActiveTabComponent employeeId={employee.id} />
             )}
           </div>
         </div>
