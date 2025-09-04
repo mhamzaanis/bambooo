@@ -1,7 +1,6 @@
 import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, jsonb, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 
 export const employees = pgTable("employees", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -152,6 +151,35 @@ export const emergencyContacts = pgTable("emergency_contacts", {
   phone: text("phone"),
   email: text("email"),
   address: text("address"),
+});
+export interface Bonus {
+  id: string;
+  employeeId: string;
+  type: string;
+  amount: string;
+  frequency: string;
+  eligibilityDate?: string;
+  description?: string;
+}
+
+export interface InsertBonus {
+  employeeId: string;
+  type: string;
+  amount: string;
+  frequency: string;
+  eligibilityDate?: string;
+  description?: string;
+}
+
+import { z } from "zod";
+
+export const insertBonusSchema = z.object({
+  employeeId: z.string().min(1),
+  type: z.string().min(1),
+  amount: z.string().min(1),
+  frequency: z.string().min(1),
+  eligibilityDate: z.string().optional(),
+  description: z.string().optional(),
 });
 
 export const onboarding = pgTable("onboarding", {

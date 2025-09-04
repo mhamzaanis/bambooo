@@ -25,6 +25,8 @@ import {
   type InsertOnboarding,
   type Offboarding,
   type InsertOffboarding,
+  type Bonus,
+  type InsertBonus
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -35,6 +37,12 @@ export interface IStorage {
   createEmployee(employee: InsertEmployee): Promise<Employee>;
   updateEmployee(id: string, employee: Partial<InsertEmployee>): Promise<Employee>;
   deleteEmployee(id: string): Promise<void>;
+
+  // job operations
+  getBonusesByEmployeeId(employeeId: string): Promise<Bonus[]>;
+  createBonus(bonus: InsertBonus): Promise<Bonus>;
+  updateBonus(id: string, bonus: Partial<InsertBonus>): Promise<Bonus>;
+  deleteBonus(id: string): Promise<void>;
 
   // Education operations
   getEducationByEmployeeId(employeeId: string): Promise<Education[]>;
@@ -123,13 +131,159 @@ export class MemStorage implements IStorage {
   private emergencyContacts: Map<string, EmergencyContact> = new Map();
   private onboarding: Map<string, Onboarding> = new Map();
   private offboarding: Map<string, Offboarding> = new Map();
+  private bonuses = new Map<string, Bonus>();
 
   constructor() {
     // Initialize with sample employee data
+    console.log("MemStorage constructor called");
     this.initializeSampleData();
+    console.log("After initialization - Training count:", this.training.size);
+    console.log("After initialization - Bonus count:", this.bonuses.size);
   }
 
   private initializeSampleData() {
+    console.log("Initializing sample data");
+    const sampleBonuses: Bonus[] = [
+    {
+      id: randomUUID(),
+      employeeId: "emp-1",
+      type: "Performance Bonus",
+      amount: "$5000",
+      frequency: "One-time",
+      eligibilityDate: "2025-09-01",
+      description: "For outstanding project delivery",
+    },
+    {
+      id: randomUUID(),
+      employeeId: "emp-1",
+      type: "Annual Bonus",
+      amount: "$10000",
+      frequency: "Annual",
+      eligibilityDate: "2025-12-31",
+      description: "Year-end performance bonus",
+    },
+  ];
+  sampleBonuses.forEach(bonus => {
+    console.log("Adding bonus:", bonus.id, bonus.type);
+    this.bonuses.set(bonus.id, bonus);
+  });
+
+  const sampleTraining: Training[] = [{
+      id: randomUUID(),
+      employeeId: "emp-1",
+      name: "Unlawful Harassment",
+        category: "General",
+        status: "Pending",
+        dueDate: "2025-12-02",
+        completedDate: "",
+        credits: "1.0",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "BambooHR Advantage Package Demo Video",
+        category: "BambooHR Product Training",
+        status: "Pending",
+        dueDate: "",
+        completedDate: "",
+        credits: "0.5",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "Quarterly Security Training",
+        category: "BambooHR Product Training",
+        status: "Pending",
+        dueDate: "2025-11-18",
+        completedDate: "",
+        credits: "1.0",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "Sexual Harassment Training",
+        category: "Quarterly Training",
+        status: "Pending",
+        dueDate: "2022-11-10",
+        completedDate: "",
+        credits: "1.0",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "Annual Security Training",
+        category: "Required Annual Trainings",
+        status: "Pending",
+        dueDate: "",
+        completedDate: "",
+        credits: "1.0",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "HIPAA Training",
+        category: "Required Annual Trainings",
+        status: "Pending",
+        dueDate: "",
+        completedDate: "",
+        credits: "1.0",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "OSHA Training",
+        category: "Required Annual Trainings",
+        status: "Pending",
+        dueDate: "2022-10-14",
+        completedDate: "",
+        credits: "1.0",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "Unlawful Harassment",
+        category: "General",
+        status: "Completed",
+        dueDate: "2025-12-02",
+        completedDate: "2025-12-02",
+        credits: "1.0",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "Quarterly Security Training",
+        category: "BambooHR Product Training",
+        status: "Completed",
+        dueDate: "2025-08-19",
+        completedDate: "2025-08-19",
+        credits: "1.0",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "Getting Started in BambooHR",
+        category: "BambooHR Product Training",
+        status: "Completed",
+        dueDate: "2025-08-19",
+        completedDate: "2025-08-19",
+        credits: "0.5",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "Working from home during COVID-19",
+        category: "COVID-19",
+        status: "Completed",
+        dueDate: "2025-08-19",
+        completedDate: "2025-08-19",
+        credits: "0.5",
+      },
+    ]
+    sampleTraining.forEach(training => {
+  console.log("Adding training:", training.id, training.name);
+  this.training.set(training.id, training);
+});
+
     const sampleEmployee: Employee = {
       id: "emp-1",
       firstName: "Muhammad Hamza",
@@ -175,8 +329,42 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+    console.log("Adding employee:", sampleEmployee.id);
+    this.employees.set(sampleEmployee.id, sampleEmployee);
+    console.log("Sample data initialized - Training count:", this.training.size);
 
     this.employees.set(sampleEmployee.id, sampleEmployee);
+  }
+
+  //job operations
+  async getBonusesByEmployeeId(employeeId: string): Promise<Bonus[]> {
+  console.log("getBonusesByEmployeeId called for:", employeeId);
+  const bonuses = Array.from(this.bonuses.values()).filter(bonus => bonus.employeeId === employeeId);
+  console.log("Returning bonuses:", bonuses);
+  return bonuses;
+}
+
+  async createBonus(bonus: InsertBonus): Promise<Bonus> {
+    console.log("Creating bonus:", bonus);
+    const id = randomUUID();
+    const newBonus: Bonus = { ...bonus, id };
+    this.bonuses.set(id, newBonus);
+    console.log("Created bonus:", newBonus);
+    return newBonus;
+  }
+
+  async updateBonus(id: string, bonus: Partial<InsertBonus>): Promise<Bonus> {
+    const existing = this.bonuses.get(id);
+    if (!existing) {
+      throw new Error(`Bonus with id ${id} not found`);
+    }
+    const updated: Bonus = { ...existing, ...bonus };
+    this.bonuses.set(id, updated);
+    return updated;
+  }
+
+  async deleteBonus(id: string): Promise<void> {
+    this.bonuses.delete(id);
   }
 
   // Employee operations
@@ -376,7 +564,15 @@ export class MemStorage implements IStorage {
 
   // Training operations
   async getTrainingByEmployeeId(employeeId: string): Promise<Training[]> {
-    return Array.from(this.training.values()).filter(training => training.employeeId === employeeId);
+    console.log("getTrainingByEmployeeId called for:", employeeId);
+    console.log("Current training map size:", this.training.size);
+    if (this.training.size === 0) {
+      console.log("Training map empty, reinitializing sample data");
+      this.initializeSampleData();
+    }
+    const trainings = Array.from(this.training.values()).filter(training => training.employeeId === employeeId);
+    console.log("Trainings for employee", employeeId, ":", trainings);
+    return trainings;
   }
 
   async createTraining(training: InsertTraining): Promise<Training> {

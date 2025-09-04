@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { Employee } from '@shared/schema';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { Employee } from "@shared/schema";
 
 interface DataStore {
   currentEmployee: Employee | null;
@@ -9,10 +9,10 @@ interface DataStore {
   notifications: Array<{
     id: string;
     message: string;
-    type: 'success' | 'error' | 'info';
+    type: "success" | "error" | "info";
     timestamp: Date;
   }>;
-  addNotification: (message: string, type?: 'success' | 'error' | 'info') => void;
+  addNotification: (message: string, type?: "success" | "error" | "info") => void;
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
 }
@@ -21,11 +21,9 @@ export const useDataStore = create<DataStore>()(
   persist(
     (set, get) => ({
       currentEmployee: null,
-      
       setCurrentEmployee: (employee) => {
         set({ currentEmployee: employee });
       },
-      
       updateEmployeeField: (field, value) => {
         const { currentEmployee } = get();
         if (!currentEmployee) return;
@@ -36,7 +34,6 @@ export const useDataStore = create<DataStore>()(
           const path = field.split(".");
           let current = updatedEmployee.profileData || {};
           
-          // Initialize nested objects if they don't exist
           if (!updatedEmployee.profileData) {
             updatedEmployee.profileData = { personal: {}, address: {}, contact: {}, social: {}, visa: {} };
           }
@@ -55,39 +52,32 @@ export const useDataStore = create<DataStore>()(
 
         set({ currentEmployee: updatedEmployee });
       },
-
       notifications: [],
-      
-      addNotification: (message, type = 'info') => {
+      addNotification: (message, type = "info") => {
         const notification = {
           id: Date.now().toString(),
           message,
           type,
           timestamp: new Date(),
         };
-        
         set((state) => ({
           notifications: [...state.notifications, notification],
         }));
-        
-        // Auto-remove notification after 5 seconds
         setTimeout(() => {
           get().removeNotification(notification.id);
         }, 5000);
       },
-      
       removeNotification: (id) => {
         set((state) => ({
-          notifications: state.notifications.filter(n => n.id !== id),
+          notifications: state.notifications.filter((n) => n.id !== id),
         }));
       },
-      
       clearNotifications: () => {
         set({ notifications: [] });
       },
     }),
     {
-      name: 'bamboo-hr-data',
+      name: "bamboo-hr-data",
       partialize: (state) => ({
         currentEmployee: state.currentEmployee,
       }),
@@ -95,10 +85,8 @@ export const useDataStore = create<DataStore>()(
   )
 );
 
-// Helper functions for common operations
 export const useEmployeeData = () => {
   const store = useDataStore();
-  
   return {
     employee: store.currentEmployee,
     updateField: store.updateEmployeeField,
@@ -108,7 +96,6 @@ export const useEmployeeData = () => {
 
 export const useNotifications = () => {
   const store = useDataStore();
-  
   return {
     notifications: store.notifications,
     addNotification: store.addNotification,

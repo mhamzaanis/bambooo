@@ -15,6 +15,7 @@ import {
   insertEmergencyContactSchema,
   insertOnboardingSchema,
   insertOffboardingSchema,
+  insertBonusSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -109,46 +110,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Employment history routes
-  app.get("/api/employees/:employeeId/employment-history", async (req, res) => {
+  //bonus 
+  app.get("/api/employees/:employeeId/bonuses", async (req, res) => {
     try {
-      const history = await storage.getEmploymentHistoryByEmployeeId(req.params.employeeId);
-      res.json(history);
+      console.log(`Handling GET /api/employees/${req.params.employeeId}/bonuses`);
+      const bonuses = await storage.getBonusesByEmployeeId(req.params.employeeId);
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+      res.json(bonuses);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch employment history" });
+      console.error("Error in GET /api/employees/:employeeId/bonuses:", error);
+      res.status(500).json({ error: "Failed to fetch bonuses" });
     }
   });
 
-  app.post("/api/employees/:employeeId/employment-history", async (req, res) => {
+  app.post("/api/employees/:employeeId/bonuses", async (req, res) => {
     try {
-      const historyData = insertEmploymentHistorySchema.parse({
+      console.log(`Handling POST /api/employees/${req.params.employeeId}/bonuses`, req.body);
+      const bonusData = insertBonusSchema.parse({
         ...req.body,
         employeeId: req.params.employeeId,
       });
-      const history = await storage.createEmploymentHistory(historyData);
-      res.status(201).json(history);
+      const bonus = await storage.createBonus(bonusData);
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+      res.status(201).json(bonus);
     } catch (error) {
-      res.status(400).json({ error: "Invalid employment history data" });
+      console.error("Error in POST /api/employees/:employeeId/bonuses:", error);
+      res.status(400).json({ error: "Invalid bonus data" });
     }
   });
 
-  app.patch("/api/employment-history/:id", async (req, res) => {
+  app.patch("/api/bonuses/:id", async (req, res) => {
     try {
-      const history = await storage.updateEmploymentHistory(req.params.id, req.body);
-      res.json(history);
+      console.log(`Handling PATCH /api/bonuses/${req.params.id}`, req.body);
+      const bonusData = insertBonusSchema.partial().parse(req.body);
+      const bonus = await storage.updateBonus(req.params.id, bonusData);
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+      res.json(bonus);
     } catch (error) {
-      res.status(404).json({ error: "Employment history not found" });
+      console.error("Error in PATCH /api/bonuses/:id:", error);
+      res.status(404).json({ error: "Bonus not found" });
     }
   });
 
-  app.delete("/api/employment-history/:id", async (req, res) => {
+  app.delete("/api/bonuses/:id", async (req, res) => {
     try {
-      await storage.deleteEmploymentHistory(req.params.id);
+      console.log(`Handling DELETE /api/bonuses/${req.params.id}`);
+      await storage.deleteBonus(req.params.id);
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
       res.status(204).send();
     } catch (error) {
-      res.status(404).json({ error: "Employment history not found" });
+      console.error("Error in DELETE /api/bonuses/:id:", error);
+      res.status(404).json({ error: "Bonus not found" });
     }
   });
+
+  // Employment history routes
+  app.get("/api/employees/:employeeId/employment-history", async (req, res) => {
+  try {
+    console.log("Handling GET /api/employees/:employeeId/employment-history for:", req.params.employeeId);
+    const history = await storage.getEmploymentHistoryByEmployeeId(req.params.employeeId);
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.json(history);
+  } catch (error) {
+    console.error("Error in GET /api/employees/:employeeId/employment-history:", error);
+    res.status(500).json({ error: "Failed to fetch employment history" });
+  }
+});
+
+  app.post("/api/employees/:employeeId/employment-history", async (req, res) => {
+  try {
+    console.log("Handling POST /api/employees/:employeeId/employment-history for:", req.params.employeeId);
+    const data = insertEmploymentHistorySchema.parse(req.body);
+    if (data.employeeId !== req.params.employeeId) {
+      return res.status(400).json({ error: "Employee ID mismatch" });
+    }
+    const history = await storage.createEmploymentHistory(data);
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.json(history);
+  } catch (error) {
+    console.error("Error in POST /api/employees/:employeeId/employment-history:", error);
+    res.status(500).json({ error: "Failed to create employment history" });
+  }
+});
+
+  app.patch("/api/employment-history/:id", async (req, res) => {
+  try {
+    console.log("Handling PATCH /api/employment-history/:id for:", req.params.id);
+    const data = insertEmploymentHistorySchema.partial().parse(req.body);
+    const history = await storage.updateEmploymentHistory(req.params.id, data);
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.json(history);
+  } catch (error) {
+    console.error("Error in PATCH /api/employment-history/:id:", error);
+    res.status(500).json({ error: "Failed to update employment history" });
+  }
+});
+
+  app.delete("/api/employment-history/:id", async (req, res) => {
+  try {
+    console.log("Handling DELETE /api/employment-history/:id for:", req.params.id);
+    await storage.deleteEmploymentHistory(req.params.id);
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error in DELETE /api/employment-history/:id:", error);
+    res.status(500).json({ error: "Failed to delete employment history" });
+  }
+});
+
+app.get("/api/employees/:employeeId/compensation", async (req, res) => {
+  try {
+    console.log("Handling GET /api/employees/:employeeId/compensation for:", req.params.employeeId);
+    const compensation = await storage.getCompensationByEmployeeId(req.params.employeeId);
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.json(compensation);
+  } catch (error) {
+    console.error("Error in GET /api/employees/:employeeId/compensation:", error);
+    res.status(500).json({ error: "Failed to fetch compensation" });
+  }
+});
+
+app.post("/api/employees/:employeeId/compensation", async (req, res) => {
+  try {
+    console.log("Handling POST /api/employees/:employeeId/compensation for:", req.params.employeeId);
+    const data = insertCompensationSchema.parse(req.body);
+    if (data.employeeId !== req.params.employeeId) {
+      return res.status(400).json({ error: "Employee ID mismatch" });
+    }
+    const compensation = await storage.createCompensation(data);
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.json(compensation);
+  } catch (error) {
+    console.error("Error in POST /api/employees/:employeeId/compensation:", error);
+    res.status(500).json({ error: "Failed to create compensation" });
+  }
+});
+
+app.patch("/api/compensation/:id", async (req, res) => {
+  try {
+    console.log("Handling PATCH /api/compensation/:id for:", req.params.id);
+    const data = insertCompensationSchema.partial().parse(req.body);
+    const compensation = await storage.updateCompensation(req.params.id, data);
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.json(compensation);
+  } catch (error) {
+    console.error("Error in PATCH /api/compensation/:id:", error);
+    res.status(500).json({ error: "Failed to update compensation" });
+  }
+});
+
+app.delete("/api/compensation/:id", async (req, res) => {
+  try {
+    console.log("Handling DELETE /api/compensation/:id for:", req.params.id);
+    await storage.deleteCompensation(req.params.id);
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error in DELETE /api/compensation/:id:", error);
+    res.status(500).json({ error: "Failed to delete compensation" });
+  }
+});
 
   // Compensation routes
   app.get("/api/employees/:employeeId/compensation", async (req, res) => {
@@ -317,9 +438,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Training routes
   app.get("/api/employees/:employeeId/training", async (req, res) => {
     try {
+      console.log("Handling GET /api/employees/:employeeId/training for:", req.params.employeeId);
       const training = await storage.getTrainingByEmployeeId(req.params.employeeId);
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
       res.json(training);
     } catch (error) {
+      console.error("Error in GET /api/employees/:employeeId/training:", error);
       res.status(500).json({ error: "Failed to fetch training" });
     }
   });
@@ -337,21 +461,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/training/:id", async (req, res) => {
+  app.post("/api/employees/:employeeId/training", async (req, res) => {
     try {
-      const training = await storage.updateTraining(req.params.id, req.body);
+      console.log("Handling POST /api/employees/:employeeId/training for:", req.params.employeeId);
+      const data = insertTrainingSchema.parse(req.body);
+      if (data.employeeId !== req.params.employeeId) {
+        return res.status(400).json({ error: "Employee ID mismatch" });
+      }
+      const training = await storage.createTraining(data);
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
       res.json(training);
     } catch (error) {
-      res.status(404).json({ error: "Training not found" });
+      console.error("Error in POST /api/employees/:employeeId/training:", error);
+      res.status(500).json({ error: "Failed to create training" });
+    }
+  });
+
+  app.patch("/api/training/:id", async (req, res) => {
+    try {
+      console.log("Handling PATCH /api/training/:id for:", req.params.id);
+      const data = insertTrainingSchema.partial().parse(req.body);
+      const training = await storage.updateTraining(req.params.id, data);
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+      res.json(training);
+    } catch (error) {
+      console.error("Error in PATCH /api/training/:id:", error);
+      res.status(500).json({ error: "Failed to update training" });
     }
   });
 
   app.delete("/api/training/:id", async (req, res) => {
     try {
+      console.log("Handling DELETE /api/training/:id for:", req.params.id);
       await storage.deleteTraining(req.params.id);
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
       res.status(204).send();
     } catch (error) {
-      res.status(404).json({ error: "Training not found" });
+      console.error("Error in DELETE /api/training/:id:", error);
+      res.status(500).json({ error: "Failed to delete training" });
     }
   });
 

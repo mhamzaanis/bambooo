@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { apiRequest } from "@/lib/queryClient";
-import { User, MapPin, Phone, Link, GraduationCap, FileText, Plus } from "lucide-react";
+import { User, MapPin, Phone, Link, GraduationCap, FileText, Plus, Save } from "lucide-react";
 import type { Employee, Education, InsertEducation } from "@shared/schema";
 
 interface PersonalTabProps {
@@ -21,6 +21,8 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
   const queryClient = useQueryClient();
   const [showEducationForm, setShowEducationForm] = useState(false);
   const [editingEducation, setEditingEducation] = useState<Education | null>(null);
+  const [formData, setFormData] = useState<Partial<Employee>>({});
+  const [hasChanges, setHasChanges] = useState(false);
 
   const { data: employee } = useQuery<Employee>({
     queryKey: ["/api/employees", employeeId],
@@ -30,6 +32,14 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
     queryKey: ["/api/employees", employeeId, "education"],
   });
 
+  // Initialize form data when employee data loads
+  useEffect(() => {
+    if (employee) {
+      setFormData(employee);
+      setHasChanges(false);
+    }
+  }, [employee]);
+
   const updateEmployeeMutation = useMutation({
     mutationFn: async (data: Partial<Employee>) => {
       const response = await apiRequest("PATCH", `/api/employees/${employeeId}`, data);
@@ -37,6 +47,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId] });
+      setHasChanges(false);
       toast({ title: "Success", description: "Employee information updated successfully" });
     },
     onError: () => {
@@ -88,46 +99,57 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
   });
 
   const handleFieldChange = (field: string, value: any) => {
-    if (!employee) return;
+    if (!formData) return;
 
-    const updatedEmployee = { ...employee };
+    const updatedFormData = { ...formData };
     
     if (field.startsWith("profileData.")) {
       const path = field.split(".");
-      let current = updatedEmployee.profileData || {};
       
       // Initialize nested objects if they don't exist
-      if (!updatedEmployee.profileData) {
-        updatedEmployee.profileData = { personal: {}, address: {}, contact: {}, social: {}, visa: {} };
+      if (!updatedFormData.profileData) {
+        updatedFormData.profileData = { personal: {}, address: {}, contact: {}, social: {}, visa: {} };
       }
       
       const section = path[1];
       const property = path[2];
       
-      if (!updatedEmployee.profileData[section as keyof typeof updatedEmployee.profileData]) {
-        (updatedEmployee.profileData as any)[section] = {};
+      if (!updatedFormData.profileData[section as keyof typeof updatedFormData.profileData]) {
+        (updatedFormData.profileData as any)[section] = {};
       }
       
-      (updatedEmployee.profileData as any)[section][property] = value;
+      (updatedFormData.profileData as any)[section][property] = value;
     } else {
-      (updatedEmployee as any)[field] = value;
+      (updatedFormData as any)[field] = value;
     }
 
-    updateEmployeeMutation.mutate(updatedEmployee);
+    setFormData(updatedFormData);
+    setHasChanges(true);
+  };
+
+  const handleSaveChanges = () => {
+    updateEmployeeMutation.mutate(formData);
+  };
+
+  const handleDiscardChanges = () => {
+    if (employee) {
+      setFormData(employee);
+      setHasChanges(false);
+    }
   };
 
   const handleEducationSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+    const formDataElement = new FormData(e.currentTarget);
     
     const educationData = {
       employeeId,
-      institution: formData.get("institution") as string,
-      degree: formData.get("degree") as string,
-      fieldOfStudy: formData.get("fieldOfStudy") as string,
-      startDate: formData.get("startDate") as string,
-      endDate: formData.get("endDate") as string,
-      description: formData.get("description") as string,
+      institution: formDataElement.get("institution") as string,
+      degree: formDataElement.get("degree") as string,
+      fieldOfStudy: formDataElement.get("fieldOfStudy") as string,
+      startDate: formDataElement.get("startDate") as string,
+      endDate: formDataElement.get("endDate") as string,
+      description: formDataElement.get("description") as string,
     };
 
     if (editingEducation) {
@@ -145,7 +167,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
     { key: "endDate" as keyof Education, header: "End Date" },
   ];
 
-  if (!employee) {
+  if (!employee || !formData) {
     return <div>Loading...</div>;
   }
 
@@ -165,7 +187,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Label htmlFor="firstName">First Name</Label>
               <Input
                 id="firstName"
-                value={employee.firstName || ""}
+                value={formData.firstName || ""}
                 onChange={(e) => handleFieldChange("firstName", e.target.value)}
                 data-testid="input-firstName"
               />
@@ -174,7 +196,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Label htmlFor="lastName">Last Name</Label>
               <Input
                 id="lastName"
-                value={employee.lastName || ""}
+                value={formData.lastName || ""}
                 onChange={(e) => handleFieldChange("lastName", e.target.value)}
                 data-testid="input-lastName"
               />
@@ -183,7 +205,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Label htmlFor="preferredName">Preferred Name</Label>
               <Input
                 id="preferredName"
-                value={employee.profileData?.personal?.preferredName || ""}
+                value={formData.profileData?.personal?.preferredName || ""}
                 onChange={(e) => handleFieldChange("profileData.personal.preferredName", e.target.value)}
                 data-testid="input-preferredName"
               />
@@ -193,7 +215,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="email"
                 type="email"
-                value={employee.email || ""}
+                value={formData.email || ""}
                 onChange={(e) => handleFieldChange("email", e.target.value)}
                 data-testid="input-email"
               />
@@ -201,7 +223,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
             <div>
               <Label htmlFor="gender">Gender</Label>
               <Select
-                value={employee.profileData?.personal?.gender || ""}
+                value={formData.profileData?.personal?.gender || ""}
                 onValueChange={(value) => handleFieldChange("profileData.personal.gender", value)}
               >
                 <SelectTrigger data-testid="select-gender">
@@ -220,7 +242,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="dateOfBirth"
                 type="date"
-                value={employee.profileData?.personal?.dateOfBirth || ""}
+                value={formData.profileData?.personal?.dateOfBirth || ""}
                 onChange={(e) => handleFieldChange("profileData.personal.dateOfBirth", e.target.value)}
                 data-testid="input-dateOfBirth"
               />
@@ -228,7 +250,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
             <div>
               <Label htmlFor="maritalStatus">Marital Status</Label>
               <Select
-                value={employee.profileData?.personal?.maritalStatus || ""}
+                value={formData.profileData?.personal?.maritalStatus || ""}
                 onValueChange={(value) => handleFieldChange("profileData.personal.maritalStatus", value)}
               >
                 <SelectTrigger data-testid="select-maritalStatus">
@@ -247,7 +269,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="ssn"
                 placeholder="XXX-XX-XXXX"
-                value={employee.profileData?.personal?.ssn || ""}
+                value={formData.profileData?.personal?.ssn || ""}
                 onChange={(e) => handleFieldChange("profileData.personal.ssn", e.target.value)}
                 data-testid="input-ssn"
               />
@@ -270,7 +292,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Label htmlFor="street">Street Address</Label>
               <Input
                 id="street"
-                value={employee.profileData?.address?.street || ""}
+                value={formData.profileData?.address?.street || ""}
                 onChange={(e) => handleFieldChange("profileData.address.street", e.target.value)}
                 data-testid="input-street"
               />
@@ -279,7 +301,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Label htmlFor="city">City</Label>
               <Input
                 id="city"
-                value={employee.profileData?.address?.city || ""}
+                value={formData.profileData?.address?.city || ""}
                 onChange={(e) => handleFieldChange("profileData.address.city", e.target.value)}
                 data-testid="input-city"
               />
@@ -288,7 +310,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Label htmlFor="state">State</Label>
               <Input
                 id="state"
-                value={employee.profileData?.address?.state || ""}
+                value={formData.profileData?.address?.state || ""}
                 onChange={(e) => handleFieldChange("profileData.address.state", e.target.value)}
                 data-testid="input-state"
               />
@@ -297,7 +319,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Label htmlFor="zipCode">ZIP Code</Label>
               <Input
                 id="zipCode"
-                value={employee.profileData?.address?.zipCode || ""}
+                value={formData.profileData?.address?.zipCode || ""}
                 onChange={(e) => handleFieldChange("profileData.address.zipCode", e.target.value)}
                 data-testid="input-zipCode"
               />
@@ -305,7 +327,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
             <div>
               <Label htmlFor="country">Country</Label>
               <Select
-                value={employee.profileData?.address?.country || ""}
+                value={formData.profileData?.address?.country || ""}
                 onValueChange={(value) => handleFieldChange("profileData.address.country", value)}
               >
                 <SelectTrigger data-testid="select-country">
@@ -337,7 +359,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="workPhone"
                 type="tel"
-                value={employee.profileData?.contact?.workPhone || employee.phone || ""}
+                value={formData.profileData?.contact?.workPhone || formData.phone || ""}
                 onChange={(e) => handleFieldChange("profileData.contact.workPhone", e.target.value)}
                 data-testid="input-workPhone"
               />
@@ -347,7 +369,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="mobilePhone"
                 type="tel"
-                value={employee.profileData?.contact?.mobilePhone || ""}
+                value={formData.profileData?.contact?.mobilePhone || ""}
                 onChange={(e) => handleFieldChange("profileData.contact.mobilePhone", e.target.value)}
                 data-testid="input-mobilePhone"
               />
@@ -357,7 +379,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="homePhone"
                 type="tel"
-                value={employee.profileData?.contact?.homePhone || ""}
+                value={formData.profileData?.contact?.homePhone || ""}
                 onChange={(e) => handleFieldChange("profileData.contact.homePhone", e.target.value)}
                 data-testid="input-homePhone"
               />
@@ -367,7 +389,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="personalEmail"
                 type="email"
-                value={employee.profileData?.contact?.personalEmail || ""}
+                value={formData.profileData?.contact?.personalEmail || ""}
                 onChange={(e) => handleFieldChange("profileData.contact.personalEmail", e.target.value)}
                 data-testid="input-personalEmail"
               />
@@ -392,7 +414,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 id="linkedin"
                 type="url"
                 placeholder="LinkedIn URL"
-                value={employee.profileData?.social?.linkedin || ""}
+                value={formData.profileData?.social?.linkedin || ""}
                 onChange={(e) => handleFieldChange("profileData.social.linkedin", e.target.value)}
                 data-testid="input-linkedin"
               />
@@ -403,7 +425,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 id="twitter"
                 type="url"
                 placeholder="Twitter URL"
-                value={employee.profileData?.social?.twitter || ""}
+                value={formData.profileData?.social?.twitter || ""}
                 onChange={(e) => handleFieldChange("profileData.social.twitter", e.target.value)}
                 data-testid="input-twitter"
               />
@@ -414,7 +436,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 id="website"
                 type="url"
                 placeholder="Website URL"
-                value={employee.profileData?.social?.website || ""}
+                value={formData.profileData?.social?.website || ""}
                 onChange={(e) => handleFieldChange("profileData.social.website", e.target.value)}
                 data-testid="input-website"
               />
@@ -549,7 +571,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
             <div>
               <Label htmlFor="visaType">Visa Type</Label>
               <Select
-                value={employee.profileData?.visa?.type || ""}
+                value={formData.profileData?.visa?.type || ""}
                 onValueChange={(value) => handleFieldChange("profileData.visa.type", value)}
               >
                 <SelectTrigger data-testid="select-visaType">
@@ -567,7 +589,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
             <div>
               <Label htmlFor="visaStatus">Visa Status</Label>
               <Select
-                value={employee.profileData?.visa?.status || ""}
+                value={formData.profileData?.visa?.status || ""}
                 onValueChange={(value) => handleFieldChange("profileData.visa.status", value)}
               >
                 <SelectTrigger data-testid="select-visaStatus">
@@ -586,7 +608,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="visaExpiration"
                 type="date"
-                value={employee.profileData?.visa?.expiration || ""}
+                value={formData.profileData?.visa?.expiration || ""}
                 onChange={(e) => handleFieldChange("profileData.visa.expiration", e.target.value)}
                 data-testid="input-visaExpiration"
               />
@@ -594,7 +616,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
             <div>
               <Label htmlFor="sponsorshipRequired">Sponsorship Required</Label>
               <Select
-                value={employee.profileData?.visa?.sponsorshipRequired ? "Yes" : "No"}
+                value={formData.profileData?.visa?.sponsorshipRequired ? "Yes" : "No"}
                 onValueChange={(value) => handleFieldChange("profileData.visa.sponsorshipRequired", value === "Yes")}
               >
                 <SelectTrigger data-testid="select-sponsorshipRequired">
@@ -609,6 +631,39 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Save/Discard Changes Buttons */}
+      {hasChanges && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-yellow-800">
+                You have unsaved changes. Click "Save Changes" to save or "Discard Changes" to cancel.
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={handleDiscardChanges}
+                  variant="outline"
+                  size="sm"
+                  data-testid="button-discard-changes"
+                >
+                  Discard Changes
+                </Button>
+                <Button
+                  onClick={handleSaveChanges}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700"
+                  data-testid="button-save-changes"
+                  disabled={updateEmployeeMutation.isPending}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateEmployeeMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
