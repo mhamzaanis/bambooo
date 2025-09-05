@@ -117,8 +117,78 @@
       "id": "9a3e84ef-5aff-4033-a698-05c8b4c1a497"
     }
   },
-  "timeOff": {},
-  "documents": {},
+  "timeOff": {
+    "timeoff-2": {
+      "id": "timeoff-2",
+      "employeeId": "emp-1",
+      "type": "Sick Leave",
+      "startDate": "2025-11-15",
+      "endDate": "2025-11-15",
+      "days": "1.0",
+      "status": "Approved",
+      "comment": "Doctor's appointment"
+    },
+    "timeoff-3": {
+      "id": "timeoff-3",
+      "employeeId": "emp-1",
+      "type": "Personal",
+      "startDate": "2025-10-10",
+      "endDate": "2025-10-11",
+      "days": "2",
+      "status": "Approved",
+      "comment": "Personal matters to attend to"
+    },
+    "timeoff-4": {
+      "id": "timeoff-4",
+      "employeeId": "emp-1",
+      "type": "Vacation",
+      "startDate": "2025-09-20",
+      "endDate": "2025-09-22",
+      "days": "3",
+      "status": "Approved",
+      "comment": "Short weekend getaway - conflicted with project deadline"
+    },
+    "timeoff-5": {
+      "id": "timeoff-5",
+      "employeeId": "emp-1",
+      "type": "Bereavement",
+      "startDate": "2025-08-05",
+      "endDate": "2025-08-07",
+      "days": "3.0",
+      "status": "Approved",
+      "comment": "Family funeral"
+    },
+    "timeoff-6": {
+      "id": "timeoff-6",
+      "employeeId": "emp-1",
+      "type": "Vacation",
+      "startDate": "2025-07-04",
+      "endDate": "2025-07-04",
+      "days": "1.0",
+      "status": "Approved",
+      "comment": "Independence Day"
+    },
+    "3bf985f5-c8ea-4260-938c-2bc6a59ba69a": {
+      "employeeId": "emp-1",
+      "type": "Personal",
+      "startDate": "2025-09-05",
+      "endDate": "2025-12-05",
+      "days": "92",
+      "status": "Pending",
+      "comment": "testing\n",
+      "id": "3bf985f5-c8ea-4260-938c-2bc6a59ba69a"
+    }
+  },
+  "documents": {
+    "dcb63589-65f6-4d18-a640-e073c6f3baaf": {
+      "employeeId": "emp-1",
+      "category": "Employee Uploads",
+      "name": "Sample Document",
+      "fileName": "sample.pdf",
+      "uploadDate": "2025-09-05",
+      "id": "dcb63589-65f6-4d18-a640-e073c6f3baaf"
+    }
+  },
   "benefits": {},
   "training": {
     "96215358-7862-4901-b827-ea83c9138f40": {
