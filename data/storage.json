@@ -353,9 +353,141 @@
       "id": "e08c47cb-518d-4954-a14c-18d69f391755"
     }
   },
-  "assets": {},
-  "notes": {},
-  "emergencyContacts": {},
+  "assets": {
+    "asset-002": {
+      "id": "asset-002",
+      "employeeId": "emp-1",
+      "category": "Monitor",
+      "description": "Dell UltraSharp 32\" 4K Monitor",
+      "serialNumber": "DU32-4K-2024-002",
+      "dateAssigned": "2024-01-16"
+    },
+    "asset-003": {
+      "id": "asset-003",
+      "employeeId": "emp-1",
+      "category": "Cell Phone",
+      "description": "Apple Magic Keyboard with Touch ID",
+      "serialNumber": "AMKTID-2024-003",
+      "dateAssigned": "2024-01-16"
+    },
+    "asset-004": {
+      "id": "asset-004",
+      "employeeId": "emp-1",
+      "category": "Monitor",
+      "description": "Apple Magic Mouse 3",
+      "serialNumber": "AMM3-2024-004",
+      "dateAssigned": "2024-01-16"
+    },
+    "asset-005": {
+      "id": "asset-005",
+      "employeeId": "emp-1",
+      "category": "Cell Phone",
+      "description": "iPhone 15 Pro Max 256GB",
+      "serialNumber": "IP15PM-256-2024-005",
+      "dateAssigned": "2024-02-01"
+    },
+    "asset-008": {
+      "id": "asset-008",
+      "employeeId": "emp-1",
+      "category": "Hardware",
+      "description": "Noise-Cancelling Headphones",
+      "serialNumber": "NCH-2024-007",
+      "dateAssigned": "2024-02-15"
+    },
+    "asset-009": {
+      "id": "asset-009",
+      "employeeId": "emp-1",
+      "category": "Computer",
+      "description": "Dell Laptop Docking Station",
+      "serialNumber": "DLDS-2024-008",
+      "dateAssigned": "2024-01-17"
+    },
+    "asset-010": {
+      "id": "asset-010",
+      "employeeId": "emp-1",
+      "category": "Other",
+      "description": "Office Chair - Ergonomic",
+      "serialNumber": "ERGO-CHAIR-009",
+      "dateAssigned": "2024-01-10"
+    },
+    "66e17b19-5932-4e97-9086-fe0ddb5c6af3": {
+      "employeeId": "emp-1",
+      "category": "Other",
+      "description": "test",
+      "serialNumber": "test",
+      "dateAssigned": "2025-09-04",
+      "id": "66e17b19-5932-4e97-9086-fe0ddb5c6af3"
+    },
+    "d6978f78-ec50-46c8-b693-3e8cd7570bfa": {
+      "employeeId": "emp-1",
+      "category": "Hardware",
+      "description": "test",
+      "serialNumber": "er66rtyuihbdjcd",
+      "dateAssigned": "2025-09-02",
+      "id": "d6978f78-ec50-46c8-b693-3e8cd7570bfa"
+    }
+  },
+  "notes": {
+    "fe527693-3898-4fd8-88b2-11b2473a011a": {
+      "employeeId": "emp-1",
+      "title": "test",
+      "content": "tets",
+      "id": "fe527693-3898-4fd8-88b2-11b2473a011a",
+      "createdAt": "2025-09-05T20:39:37.946Z"
+    }
+  },
+  "emergencyContacts": {
+    "ec-001": {
+      "id": "ec-001",
+      "employeeId": "emp-1",
+      "firstName": "Sarah",
+      "lastName": "Johnson",
+      "relationship": "Spouse",
+      "phone": "(555) 123-4567",
+      "email": "sarah.johnson@email.com",
+      "address": "123 Main St, Springfield, IL 62701"
+    },
+    "ec-002": {
+      "id": "ec-002",
+      "employeeId": "emp-1",
+      "firstName": "Robert",
+      "lastName": "Smith",
+      "relationship": "Father",
+      "phone": "(555) 987-6543",
+      "email": "robert.smith@email.com",
+      "address": "456 Oak Ave, Springfield, IL 62702"
+    },
+    "ec-003": {
+      "id": "ec-003",
+      "employeeId": "emp-1",
+      "firstName": "Emily",
+      "lastName": "Chen",
+      "relationship": "Sister",
+      "phone": "(555) 246-8135",
+      "email": "emily.chen@email.com",
+      "address": "789 Pine Rd, Springfield, IL 62703"
+    },
+    "ec-004": {
+      "id": "ec-004",
+      "employeeId": "emp-1",
+      "firstName": "Michael",
+      "lastName": "Davis",
+      "relationship": "Friend",
+      "phone": "(555) 369-2580",
+      "email": "mike.davis@email.com",
+      "address": "321 Elm St, Springfield, IL 62704"
+    },
+    "c9fb1bf0-825f-4c09-899e-3419894f02f0": {
+      "employeeId": "emp-1",
+      "firstName": "testing",
+      "lastName": "test",
+      "relationship": "Child",
+      "phone": "+55555 (555) 555-5555",
+      "email": "",
+      "address": "",
+      "id": "c9fb1bf0-825f-4c09-899e-3419894f02f0"
+    }
+  },
   "dependents": {},
   "onboarding": {},
   "offboarding": {},

@@ -628,7 +628,11 @@ export class FileStorage implements IStorage {
 
   async createNote(note: InsertNote): Promise<Note> {
     const id = randomUUID();
-    const newNote: Note = { ...note, id };
+    const newNote: Note = { 
+      ...note, 
+      id,
+      createdAt: new Date().toISOString()
+    };
     this.data.notes[id] = newNote;
     this.saveData();
     return newNote;
