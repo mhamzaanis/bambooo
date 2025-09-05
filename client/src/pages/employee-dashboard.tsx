@@ -32,11 +32,13 @@ const tabs = [
   { id: "benefits", label: "Benefits", component: BenefitsTab },
   { id: "training", label: "Training", component: TrainingTab },
   { id: "assets", label: "Assets", component: AssetsTab },
+];
+
+const moreDropdownTabs = [
   { id: "notes", label: "Notes", component: NotesTab },
   { id: "emergency", label: "Emergency Contacts", component: EmergencyContactsTab },
   { id: "onboarding", label: "Onboarding", component: OnboardingTab },
   { id: "offboarding", label: "Offboarding", component: OffboardingTab },
-  { id: "more", label: "More", component: MoreTab },
 ];
 
 export default function EmployeeDashboard() {
@@ -50,7 +52,6 @@ export default function EmployeeDashboard() {
     "benefits",
     "training",
     "assets",
-    "more",
   ]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
     try {
@@ -71,7 +72,9 @@ export default function EmployeeDashboard() {
     queryKey: ["/api/employees", DEFAULT_EMPLOYEE_ID],
   });
 
-  const ActiveTabComponent = tabs.find((tab) => tab.id === activeTab)?.component;
+  const ActiveTabComponent = 
+    tabs.find((tab) => tab.id === activeTab)?.component ||
+    moreDropdownTabs.find((tab) => tab.id === activeTab)?.component;
   const visibleTabs = tabs.filter((tab) => enabledTabs.includes(tab.id));
 
   if (isLoading) {
@@ -175,7 +178,6 @@ export default function EmployeeDashboard() {
                 {ActiveTabComponent && (
                   <ActiveTabComponent
                     employeeId={employee.id}
-                    onNavigate={(tabId: string) => setActiveTab(tabId)}
                   />
                 )}
               </CardContent>
@@ -188,7 +190,7 @@ export default function EmployeeDashboard() {
       <TabCustomizationModal
         open={customizationModalOpen}
         onOpenChange={setCustomizationModalOpen}
-        allTabs={tabs}
+        allTabs={[...tabs, ...moreDropdownTabs]}
         enabledTabs={enabledTabs}
         onTabsChange={setEnabledTabs}
       />
