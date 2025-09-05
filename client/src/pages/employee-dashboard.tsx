@@ -24,7 +24,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const DEFAULT_EMPLOYEE_ID = "emp-1";
 
-const tabs = [
+const allTabs = [
   { id: "personal", label: "Personal", component: PersonalTab },
   { id: "job", label: "Job", component: JobTab },
   { id: "timeoff", label: "Time Off", component: TimeOffTab },
@@ -32,9 +32,6 @@ const tabs = [
   { id: "benefits", label: "Benefits", component: BenefitsTab },
   { id: "training", label: "Training", component: TrainingTab },
   { id: "assets", label: "Assets", component: AssetsTab },
-];
-
-const moreDropdownTabs = [
   { id: "notes", label: "Notes", component: NotesTab },
   { id: "emergency", label: "Emergency Contacts", component: EmergencyContactsTab },
   { id: "onboarding", label: "Onboarding", component: OnboardingTab },
@@ -72,10 +69,10 @@ export default function EmployeeDashboard() {
     queryKey: ["/api/employees", DEFAULT_EMPLOYEE_ID],
   });
 
-  const ActiveTabComponent = 
-    tabs.find((tab) => tab.id === activeTab)?.component ||
-    moreDropdownTabs.find((tab) => tab.id === activeTab)?.component;
-  const visibleTabs = tabs.filter((tab) => enabledTabs.includes(tab.id));
+  const ActiveTabComponent = allTabs.find((tab) => tab.id === activeTab)?.component;
+  
+  const visibleTabs = allTabs.filter((tab) => enabledTabs.includes(tab.id));
+  const availableTabsInMore = allTabs.filter((tab) => !enabledTabs.includes(tab.id));
 
   if (isLoading) {
     return (
@@ -167,6 +164,7 @@ export default function EmployeeDashboard() {
             employee={employee}
             activeTab={activeTab}
             tabs={visibleTabs}
+            availableTabsInMore={availableTabsInMore}
             onTabChange={setActiveTab}
             onCustomizeClick={() => setCustomizationModalOpen(true)}
           />
@@ -190,7 +188,7 @@ export default function EmployeeDashboard() {
       <TabCustomizationModal
         open={customizationModalOpen}
         onOpenChange={setCustomizationModalOpen}
-        allTabs={[...tabs, ...moreDropdownTabs]}
+        allTabs={allTabs}
         enabledTabs={enabledTabs}
         onTabsChange={setEnabledTabs}
       />

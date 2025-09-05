@@ -13,6 +13,7 @@ interface EmployeeHeaderProps {
   employee: Employee;
   activeTab: string;
   tabs: Array<{ id: string; label: string }>;
+  availableTabsInMore: Array<{ id: string; label: string }>;
   onTabChange: (tabId: string) => void;
   onCustomizeClick: () => void;
 }
@@ -21,20 +22,13 @@ export default function EmployeeHeader({
   employee,
   activeTab,
   tabs,
+  availableTabsInMore,
   onTabChange,
   onCustomizeClick,
 }: EmployeeHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Define the dropdown tabs that were previously in the "More" tab
-  const moreDropdownTabs = [
-    { id: "notes", label: "Notes" },
-    { id: "emergency", label: "Emergency Contacts" },
-    { id: "onboarding", label: "Onboarding" },
-    { id: "offboarding", label: "Offboarding" },
-  ];
-
-  const isMoreTabActive = moreDropdownTabs.some(tab => tab.id === activeTab);
+  const isMoreTabActive = availableTabsInMore.some(tab => tab.id === activeTab);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,22 +46,22 @@ export default function EmployeeHeader({
       <div className={`bg-primary text-white transition-all duration-300 ${
         isScrolled ? 'transform -translate-y-full opacity-0' : 'transform translate-y-0 opacity-100'
       }`}>
-        <div className="p-6">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-24 h-24 bg-white/20 rounded-lg flex items-center justify-center">
-                <User className="h-12 w-12 text-white" />
+            <div className="flex items-center space-x-6">
+              <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center">
+                <User className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold" data-testid="employee-name">
+                <h1 className="text-2xl font-bold" data-testid="employee-name">
                   {employee.firstName} {employee.lastName}
                 </h1>
-                <p className="text-primary-foreground/80" data-testid="employee-title">
+                <p className="text-primary-foreground/80 text-sm" data-testid="employee-title">
                   {employee.jobTitle}
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <Button 
                 variant="secondary" 
                 className="bg-white text-primary hover:bg-gray-100"
@@ -89,16 +83,16 @@ export default function EmployeeHeader({
 
         {/* Tab Navigation */}
         <div className="border-t border-white/20">
-          <div className="flex items-center justify-between px-6">
-            <div className="flex space-x-1">
+          <div className="flex items-center justify-between px-6 py-2">
+            <div className="flex items-center space-x-1 flex-1">
               {tabs.map((tab) => (
                 <Button
                   key={tab.id}
                   variant="ghost"
-                  className={`px-4 py-3 text-sm font-medium rounded-none border-b-2 transition-colors ${
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                     activeTab === tab.id
-                      ? "bg-white text-primary border-white"
-                      : "text-white hover:bg-white/10 border-transparent"
+                      ? "bg-white text-primary"
+                      : "text-white hover:bg-white/10"
                   }`}
                   onClick={() => onTabChange(tab.id)}
                   data-testid={`tab-${tab.id}`}
@@ -107,40 +101,43 @@ export default function EmployeeHeader({
                 </Button>
               ))}
               
-              {/* More Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={`px-4 py-3 text-sm font-medium rounded-none border-b-2 transition-colors flex items-center ${
-                      isMoreTabActive
-                        ? "bg-white text-primary border-white"
-                        : "text-white hover:bg-white/10 border-transparent"
-                    }`}
-                    data-testid="more-dropdown-trigger"
-                  >
-                    More
-                    <ChevronDown className="ml-1 h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
-                  {moreDropdownTabs.map((tab) => (
-                    <DropdownMenuItem
-                      key={tab.id}
-                      onClick={() => onTabChange(tab.id)}
-                      className={activeTab === tab.id ? "bg-accent" : ""}
-                      data-testid={`dropdown-tab-${tab.id}`}
+              {/* More Dropdown - Only show if there are available tabs */}
+              {availableTabsInMore.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center ${
+                        isMoreTabActive
+                          ? "bg-white text-primary"
+                          : "text-white hover:bg-white/10"
+                      }`}
+                      data-testid="more-dropdown-trigger"
                     >
-                      {tab.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      More
+                      <ChevronDown className="ml-1 h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    {availableTabsInMore.map((tab) => (
+                      <DropdownMenuItem
+                        key={tab.id}
+                        onClick={() => onTabChange(tab.id)}
+                        className={activeTab === tab.id ? "bg-accent" : ""}
+                        data-testid={`dropdown-tab-${tab.id}`}
+                      >
+                        {tab.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
+            
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-white/10 ml-4"
               onClick={onCustomizeClick}
               data-testid="customize-layout-button"
             >
@@ -150,7 +147,6 @@ export default function EmployeeHeader({
           </div>
         </div>
       </div>
-
       {/* Floating Navigation Bar - Shown when scrolled */}
       <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
         isScrolled ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
@@ -174,36 +170,38 @@ export default function EmployeeHeader({
               </Button>
             ))}
             
-            {/* Floating More Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`px-4 py-2 text-xs font-medium rounded-full transition-all duration-200 flex items-center ${
-                    isMoreTabActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-foreground/70 hover:text-foreground hover:bg-white/10 dark:hover:bg-white/5"
-                  }`}
-                  data-testid="floating-more-dropdown-trigger"
-                >
-                  More
-                  <ChevronDown className="ml-1 h-2 w-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                {moreDropdownTabs.map((tab) => (
-                  <DropdownMenuItem
-                    key={tab.id}
-                    onClick={() => onTabChange(tab.id)}
-                    className={activeTab === tab.id ? "bg-accent" : ""}
-                    data-testid={`floating-dropdown-tab-${tab.id}`}
+            {/* Floating More Dropdown - Only show if there are available tabs */}
+            {availableTabsInMore.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`px-4 py-2 text-xs font-medium rounded-full transition-all duration-200 flex items-center ${
+                      isMoreTabActive
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-foreground/70 hover:text-foreground hover:bg-white/10 dark:hover:bg-white/5"
+                    }`}
+                    data-testid="floating-more-dropdown-trigger"
                   >
-                    {tab.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    More
+                    <ChevronDown className="ml-1 h-2 w-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  {availableTabsInMore.map((tab) => (
+                    <DropdownMenuItem
+                      key={tab.id}
+                      onClick={() => onTabChange(tab.id)}
+                      className={activeTab === tab.id ? "bg-accent" : ""}
+                      data-testid={`floating-dropdown-tab-${tab.id}`}
+                    >
+                      {tab.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             
             <div className="w-px h-6 bg-white/20 dark:bg-white/10 mx-2" />
             <Button

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
-import { GripVertical, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 interface Tab {
   id: string;
@@ -40,13 +40,6 @@ export default function TabCustomizationModal({
     }
   };
 
-  const moveTab = (fromIndex: number, toIndex: number) => {
-    const newTabs = [...localEnabledTabs];
-    const [movedTab] = newTabs.splice(fromIndex, 1);
-    newTabs.splice(toIndex, 0, movedTab);
-    setLocalEnabledTabs(newTabs);
-  };
-
   const handleSave = () => {
     onTabsChange(localEnabledTabs);
     onOpenChange(false);
@@ -59,31 +52,34 @@ export default function TabCustomizationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" data-testid="tab-customization-modal">
+      <DialogContent className="max-w-4xl" data-testid="tab-customization-modal">
         <DialogHeader>
-          <DialogTitle>Customize Tabs</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">Customize Tab Layout</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Add or remove tabs to customize your dashboard layout. Current tabs will appear in the main navigation bar.
+          </p>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Available Tabs */}
           {availableTabs.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Available Tabs</h3>
-              <div className="space-y-2">
+              <h3 className="text-sm font-medium text-foreground mb-3">Available Tabs</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {availableTabs.map((tab) => (
                   <Card
                     key={tab.id}
-                    className="cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="cursor-pointer hover:bg-accent/50 transition-colors border-2 border-dashed border-muted-foreground/20 hover:border-primary/40"
                     data-testid={`available-tab-${tab.id}`}
                   >
-                    <CardContent className="p-3">
+                    <CardContent className="p-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{tab.label}</span>
+                        <span className="text-sm font-medium text-foreground">{tab.label}</span>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => addTab(tab.id)}
-                          className="text-primary hover:text-primary/80"
+                          className="text-primary hover:text-primary/80 hover:bg-primary/10 h-6 w-6 p-0"
                           data-testid={`add-tab-${tab.id}`}
                         >
                           <Plus className="h-4 w-4" />
@@ -98,25 +94,22 @@ export default function TabCustomizationModal({
 
           {/* Current Tabs */}
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Current Tabs</h3>
-            <div className="space-y-2">
-              {currentTabs.map((tab, index) => (
+            <h3 className="text-sm font-medium text-foreground mb-3">Current Tabs</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {currentTabs.map((tab) => (
                 <Card
                   key={tab.id}
-                  className="cursor-move hover:bg-gray-50 transition-colors"
+                  className="hover:bg-accent/50 transition-colors border-2 border-primary/20 bg-primary/5"
                   data-testid={`current-tab-${tab.id}`}
                 >
-                  <CardContent className="p-3">
+                  <CardContent className="p-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <GripVertical className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm font-medium">{tab.label}</span>
-                      </div>
+                      <span className="text-sm font-medium text-foreground">{tab.label}</span>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => removeTab(tab.id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 h-6 w-6 p-0"
                         disabled={localEnabledTabs.length <= 1}
                         data-testid={`remove-tab-${tab.id}`}
                       >
@@ -127,15 +120,20 @@ export default function TabCustomizationModal({
                 </Card>
               ))}
             </div>
+            {localEnabledTabs.length <= 1 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                You must have at least one tab enabled.
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="flex space-x-4 pt-4">
-          <Button onClick={handleSave} className="flex-1" data-testid="save-tabs">
-            Save Changes
-          </Button>
-          <Button onClick={handleCancel} variant="outline" className="flex-1" data-testid="cancel-tabs">
+        <div className="flex justify-end space-x-3 pt-4 border-t">
+          <Button onClick={handleCancel} variant="outline" data-testid="cancel-tabs">
             Cancel
+          </Button>
+          <Button onClick={handleSave} data-testid="save-tabs">
+            Save Changes
           </Button>
         </div>
       </DialogContent>
