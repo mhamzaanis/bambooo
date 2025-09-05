@@ -187,6 +187,30 @@
       "fileName": "sample.pdf",
       "uploadDate": "2025-09-05",
       "id": "dcb63589-65f6-4d18-a640-e073c6f3baaf"
+    },
+    "5dee27f2-8195-4018-80de-2535b61064c4": {
+      "employeeId": "emp-1",
+      "category": "Employee Uploads",
+      "name": "testing",
+      "fileName": "testing123",
+      "uploadDate": "2025-09-05",
+      "id": "5dee27f2-8195-4018-80de-2535b61064c4"
+    },
+    "a36c4611-3145-4261-b46f-90c5bfc22ba8": {
+      "employeeId": "emp-1",
+      "category": "Signed Documents",
+      "name": "testing1",
+      "fileName": "tesinganother",
+      "uploadDate": "2025-09-05",
+      "id": "a36c4611-3145-4261-b46f-90c5bfc22ba8"
+    },
+    "fd991ccf-1b2b-4dd2-9638-c54b9f9bd6e1": {
+      "employeeId": "emp-1",
+      "category": "Signed Documents",
+      "name": "testinganotherone",
+      "fileName": "testinganotherone",
+      "uploadDate": "2025-09-05",
+      "id": "fd991ccf-1b2b-4dd2-9638-c54b9f9bd6e1"
     }
   },
   "benefits": {},
