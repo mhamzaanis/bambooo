@@ -1,3 +1,5 @@
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import { join } from "path";
 import {
   type Employee,
   type InsertEmployee,
@@ -29,150 +31,111 @@ import {
   type InsertBonus
 } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { FileStorage } from "./file-storage";
+import { IStorage } from "./storage";
 
-export interface IStorage {
-  // Employee operations
-  getEmployee(id: string): Promise<Employee | undefined>;
-  getEmployees(): Promise<Employee[]>;
-  createEmployee(employee: InsertEmployee): Promise<Employee>;
-  updateEmployee(id: string, employee: Partial<InsertEmployee>): Promise<Employee>;
-  deleteEmployee(id: string): Promise<void>;
-
-  // job operations
-  getBonusesByEmployeeId(employeeId: string): Promise<Bonus[]>;
-  createBonus(bonus: InsertBonus): Promise<Bonus>;
-  updateBonus(id: string, bonus: Partial<InsertBonus>): Promise<Bonus>;
-  deleteBonus(id: string): Promise<void>;
-
-  // Education operations
-  getEducationByEmployeeId(employeeId: string): Promise<Education[]>;
-  createEducation(education: InsertEducation): Promise<Education>;
-  updateEducation(id: string, education: Partial<InsertEducation>): Promise<Education>;
-  deleteEducation(id: string): Promise<void>;
-
-  // Employment history operations
-  getEmploymentHistoryByEmployeeId(employeeId: string): Promise<EmploymentHistory[]>;
-  createEmploymentHistory(history: InsertEmploymentHistory): Promise<EmploymentHistory>;
-  updateEmploymentHistory(id: string, history: Partial<InsertEmploymentHistory>): Promise<EmploymentHistory>;
-  deleteEmploymentHistory(id: string): Promise<void>;
-
-  // Compensation operations
-  getCompensationByEmployeeId(employeeId: string): Promise<Compensation[]>;
-  createCompensation(compensation: InsertCompensation): Promise<Compensation>;
-  updateCompensation(id: string, compensation: Partial<InsertCompensation>): Promise<Compensation>;
-  deleteCompensation(id: string): Promise<void>;
-
-  // Time off operations
-  getTimeOffByEmployeeId(employeeId: string): Promise<TimeOff[]>;
-  createTimeOff(timeOff: InsertTimeOff): Promise<TimeOff>;
-  updateTimeOff(id: string, timeOff: Partial<InsertTimeOff>): Promise<TimeOff>;
-  deleteTimeOff(id: string): Promise<void>;
-
-  // Document operations
-  getDocumentsByEmployeeId(employeeId: string): Promise<Document[]>;
-  createDocument(document: InsertDocument): Promise<Document>;
-  updateDocument(id: string, document: Partial<InsertDocument>): Promise<Document>;
-  deleteDocument(id: string): Promise<void>;
-
-  // Benefit operations
-  getBenefitsByEmployeeId(employeeId: string): Promise<Benefit[]>;
-  createBenefit(benefit: InsertBenefit): Promise<Benefit>;
-  updateBenefit(id: string, benefit: Partial<InsertBenefit>): Promise<Benefit>;
-  deleteBenefit(id: string): Promise<void>;
-
-  // Training operations
-  getTrainingByEmployeeId(employeeId: string): Promise<Training[]>;
-  createTraining(training: InsertTraining): Promise<Training>;
-  updateTraining(id: string, training: Partial<InsertTraining>): Promise<Training>;
-  deleteTraining(id: string): Promise<void>;
-
-  // Asset operations
-  getAssetsByEmployeeId(employeeId: string): Promise<Asset[]>;
-  createAsset(asset: InsertAsset): Promise<Asset>;
-  updateAsset(id: string, asset: Partial<InsertAsset>): Promise<Asset>;
-  deleteAsset(id: string): Promise<void>;
-
-  // Note operations
-  getNotesByEmployeeId(employeeId: string): Promise<Note[]>;
-  createNote(note: InsertNote): Promise<Note>;
-  updateNote(id: string, note: Partial<InsertNote>): Promise<Note>;
-  deleteNote(id: string): Promise<void>;
-
-  // Emergency contact operations
-  getEmergencyContactsByEmployeeId(employeeId: string): Promise<EmergencyContact[]>;
-  createEmergencyContact(contact: InsertEmergencyContact): Promise<EmergencyContact>;
-  updateEmergencyContact(id: string, contact: Partial<InsertEmergencyContact>): Promise<EmergencyContact>;
-  deleteEmergencyContact(id: string): Promise<void>;
-
-  // Onboarding operations
-  getOnboardingByEmployeeId(employeeId: string): Promise<Onboarding[]>;
-  createOnboarding(onboarding: InsertOnboarding): Promise<Onboarding>;
-  updateOnboarding(id: string, onboarding: Partial<InsertOnboarding>): Promise<Onboarding>;
-  deleteOnboarding(id: string): Promise<void>;
-
-  // Offboarding operations
-  getOffboardingByEmployeeId(employeeId: string): Promise<Offboarding[]>;
-  createOffboarding(offboarding: InsertOffboarding): Promise<Offboarding>;
-  updateOffboarding(id: string, offboarding: Partial<InsertOffboarding>): Promise<Offboarding>;
-  deleteOffboarding(id: string): Promise<void>;
+interface StorageData {
+  employees: Record<string, Employee>;
+  education: Record<string, Education>;
+  employmentHistory: Record<string, EmploymentHistory>;
+  compensation: Record<string, Compensation>;
+  timeOff: Record<string, TimeOff>;
+  documents: Record<string, Document>;
+  benefits: Record<string, Benefit>;
+  training: Record<string, Training>;
+  assets: Record<string, Asset>;
+  notes: Record<string, Note>;
+  emergencyContacts: Record<string, EmergencyContact>;
+  onboarding: Record<string, Onboarding>;
+  offboarding: Record<string, Offboarding>;
+  bonuses: Record<string, Bonus>;
 }
 
-export class MemStorage implements IStorage {
-  private employees: Map<string, Employee> = new Map();
-  private education: Map<string, Education> = new Map();
-  private employmentHistory: Map<string, EmploymentHistory> = new Map();
-  private compensation: Map<string, Compensation> = new Map();
-  private timeOff: Map<string, TimeOff> = new Map();
-  private documents: Map<string, Document> = new Map();
-  private benefits: Map<string, Benefit> = new Map();
-  private training: Map<string, Training> = new Map();
-  private assets: Map<string, Asset> = new Map();
-  private notes: Map<string, Note> = new Map();
-  private emergencyContacts: Map<string, EmergencyContact> = new Map();
-  private onboarding: Map<string, Onboarding> = new Map();
-  private offboarding: Map<string, Offboarding> = new Map();
-  private bonuses = new Map<string, Bonus>();
+export class FileStorage implements IStorage {
+  private dataDir: string;
+  private dataFile: string;
+  private data: StorageData;
 
-  constructor() {
-    // Initialize with sample employee data
-    console.log("MemStorage constructor called");
-    this.initializeSampleData();
-    console.log("After initialization - Training count:", this.training.size);
-    console.log("After initialization - Bonus count:", this.bonuses.size);
+  constructor(dataDir = "./data") {
+    this.dataDir = dataDir;
+    this.dataFile = join(dataDir, "storage.json");
+    
+    // Ensure data directory exists
+    if (!existsSync(dataDir)) {
+      mkdirSync(dataDir, { recursive: true });
+    }
+
+    // Load existing data or initialize with sample data
+    this.loadData();
   }
 
-  private initializeSampleData() {
-    console.log("Initializing sample data");
-    const sampleBonuses: Bonus[] = [
-    {
-      id: randomUUID(),
-      employeeId: "emp-1",
-      type: "Performance Bonus",
-      amount: "$5000",
-      frequency: "One-time",
-      eligibilityDate: "2025-09-01",
-      description: "For outstanding project delivery",
-    },
-    {
-      id: randomUUID(),
-      employeeId: "emp-1",
-      type: "Annual Bonus",
-      amount: "$10000",
-      frequency: "Annual",
-      eligibilityDate: "2025-12-31",
-      description: "Year-end performance bonus",
-    },
-  ];
-  sampleBonuses.forEach(bonus => {
-    console.log("Adding bonus:", bonus.id, bonus.type);
-    this.bonuses.set(bonus.id, bonus);
-  });
+  private loadData(): void {
+    try {
+      if (existsSync(this.dataFile)) {
+        console.log("Loading data from file:", this.dataFile);
+        const fileContent = readFileSync(this.dataFile, "utf-8");
+        this.data = JSON.parse(fileContent);
+        
+        // Convert date strings back to Date objects for employees
+        Object.values(this.data.employees).forEach(employee => {
+          if (employee.createdAt && typeof employee.createdAt === 'string') {
+            employee.createdAt = new Date(employee.createdAt);
+          }
+          if (employee.updatedAt && typeof employee.updatedAt === 'string') {
+            employee.updatedAt = new Date(employee.updatedAt);
+          }
+        });
+        
+        console.log("Data loaded successfully");
+      } else {
+        console.log("No existing data file found, initializing with sample data");
+        this.initializeSampleData();
+      }
+    } catch (error) {
+      console.error("Error loading data file:", error);
+      console.log("Initializing with sample data");
+      this.initializeSampleData();
+    }
+  }
 
-  const sampleTraining: Training[] = [{
-      id: randomUUID(),
-      employeeId: "emp-1",
-      name: "Unlawful Harassment",
+  private saveData(): void {
+    try {
+      const dataToSave = JSON.stringify(this.data, null, 2);
+      writeFileSync(this.dataFile, dataToSave, "utf-8");
+      console.log("Data saved successfully to", this.dataFile);
+    } catch (error) {
+      console.error("Error saving data:", error);
+    }
+  }
+
+  private initializeSampleData(): void {
+    console.log("Initializing sample data");
+
+    const sampleBonuses: Bonus[] = [
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        type: "Performance Bonus",
+        amount: "$5000",
+        frequency: "One-time",
+        eligibilityDate: "2025-09-01",
+        description: "For outstanding project delivery",
+      },
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        type: "Annual Bonus",
+        amount: "$10000",
+        frequency: "Annual",
+        eligibilityDate: "2025-12-31",
+        description: "Year-end performance bonus",
+      },
+    ];
+
+    const sampleTraining: Training[] = [
+      {
+        id: randomUUID(),
+        employeeId: "emp-1",
+        name: "Unlawful Harassment",
         category: "General",
         status: "Pending",
         dueDate: "2025-12-02",
@@ -279,11 +242,7 @@ export class MemStorage implements IStorage {
         completedDate: "2025-08-19",
         credits: "0.5",
       },
-    ]
-    sampleTraining.forEach(training => {
-  console.log("Adding training:", training.id, training.name);
-  this.training.set(training.id, training);
-});
+    ];
 
     const sampleEmployee: Employee = {
       id: "emp-1",
@@ -330,51 +289,37 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    console.log("Adding employee:", sampleEmployee.id);
-    this.employees.set(sampleEmployee.id, sampleEmployee);
-    console.log("Sample data initialized - Training count:", this.training.size);
 
-    this.employees.set(sampleEmployee.id, sampleEmployee);
-  }
+    // Initialize data structure
+    this.data = {
+      employees: { [sampleEmployee.id]: sampleEmployee },
+      education: {},
+      employmentHistory: {},
+      compensation: {},
+      timeOff: {},
+      documents: {},
+      benefits: {},
+      training: Object.fromEntries(sampleTraining.map(t => [t.id, t])),
+      assets: {},
+      notes: {},
+      emergencyContacts: {},
+      onboarding: {},
+      offboarding: {},
+      bonuses: Object.fromEntries(sampleBonuses.map(b => [b.id, b])),
+    };
 
-  //job operations
-  async getBonusesByEmployeeId(employeeId: string): Promise<Bonus[]> {
-  console.log("getBonusesByEmployeeId called for:", employeeId);
-  const bonuses = Array.from(this.bonuses.values()).filter(bonus => bonus.employeeId === employeeId);
-  console.log("Returning bonuses:", bonuses);
-  return bonuses;
-}
-
-  async createBonus(bonus: InsertBonus): Promise<Bonus> {
-    console.log("Creating bonus:", bonus);
-    const id = randomUUID();
-    const newBonus: Bonus = { ...bonus, id };
-    this.bonuses.set(id, newBonus);
-    console.log("Created bonus:", newBonus);
-    return newBonus;
-  }
-
-  async updateBonus(id: string, bonus: Partial<InsertBonus>): Promise<Bonus> {
-    const existing = this.bonuses.get(id);
-    if (!existing) {
-      throw new Error(`Bonus with id ${id} not found`);
-    }
-    const updated: Bonus = { ...existing, ...bonus };
-    this.bonuses.set(id, updated);
-    return updated;
-  }
-
-  async deleteBonus(id: string): Promise<void> {
-    this.bonuses.delete(id);
+    // Save initial data to file
+    this.saveData();
+    console.log("Sample data initialized and saved");
   }
 
   // Employee operations
   async getEmployee(id: string): Promise<Employee | undefined> {
-    return this.employees.get(id);
+    return this.data.employees[id];
   }
 
   async getEmployees(): Promise<Employee[]> {
-    return Array.from(this.employees.values());
+    return Object.values(this.data.employees);
   }
 
   async createEmployee(employee: InsertEmployee): Promise<Employee> {
@@ -385,12 +330,13 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.employees.set(id, newEmployee);
+    this.data.employees[id] = newEmployee;
+    this.saveData();
     return newEmployee;
   }
 
   async updateEmployee(id: string, employee: Partial<InsertEmployee>): Promise<Employee> {
-    const existing = this.employees.get(id);
+    const existing = this.data.employees[id];
     if (!existing) {
       throw new Error(`Employee with id ${id} not found`);
     }
@@ -399,333 +345,391 @@ export class MemStorage implements IStorage {
       ...employee,
       updatedAt: new Date(),
     };
-    this.employees.set(id, updated);
+    this.data.employees[id] = updated;
+    this.saveData();
+    console.log("Employee updated and saved:", updated);
     return updated;
   }
 
   async deleteEmployee(id: string): Promise<void> {
-    this.employees.delete(id);
+    delete this.data.employees[id];
+    this.saveData();
+  }
+
+  // Bonus operations
+  async getBonusesByEmployeeId(employeeId: string): Promise<Bonus[]> {
+    return Object.values(this.data.bonuses).filter(bonus => bonus.employeeId === employeeId);
+  }
+
+  async createBonus(bonus: InsertBonus): Promise<Bonus> {
+    const id = randomUUID();
+    const newBonus: Bonus = { ...bonus, id };
+    this.data.bonuses[id] = newBonus;
+    this.saveData();
+    return newBonus;
+  }
+
+  async updateBonus(id: string, bonus: Partial<InsertBonus>): Promise<Bonus> {
+    const existing = this.data.bonuses[id];
+    if (!existing) {
+      throw new Error(`Bonus with id ${id} not found`);
+    }
+    const updated: Bonus = { ...existing, ...bonus };
+    this.data.bonuses[id] = updated;
+    this.saveData();
+    return updated;
+  }
+
+  async deleteBonus(id: string): Promise<void> {
+    delete this.data.bonuses[id];
+    this.saveData();
   }
 
   // Education operations
   async getEducationByEmployeeId(employeeId: string): Promise<Education[]> {
-    return Array.from(this.education.values()).filter(edu => edu.employeeId === employeeId);
+    return Object.values(this.data.education).filter(edu => edu.employeeId === employeeId);
   }
 
   async createEducation(education: InsertEducation): Promise<Education> {
     const id = randomUUID();
     const newEducation: Education = { ...education, id };
-    this.education.set(id, newEducation);
+    this.data.education[id] = newEducation;
+    this.saveData();
     return newEducation;
   }
 
   async updateEducation(id: string, education: Partial<InsertEducation>): Promise<Education> {
-    const existing = this.education.get(id);
+    const existing = this.data.education[id];
     if (!existing) {
       throw new Error(`Education with id ${id} not found`);
     }
     const updated: Education = { ...existing, ...education };
-    this.education.set(id, updated);
+    this.data.education[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteEducation(id: string): Promise<void> {
-    this.education.delete(id);
+    delete this.data.education[id];
+    this.saveData();
   }
 
   // Employment history operations
   async getEmploymentHistoryByEmployeeId(employeeId: string): Promise<EmploymentHistory[]> {
-    return Array.from(this.employmentHistory.values()).filter(history => history.employeeId === employeeId);
+    return Object.values(this.data.employmentHistory).filter(history => history.employeeId === employeeId);
   }
 
   async createEmploymentHistory(history: InsertEmploymentHistory): Promise<EmploymentHistory> {
     const id = randomUUID();
     const newHistory: EmploymentHistory = { ...history, id };
-    this.employmentHistory.set(id, newHistory);
+    this.data.employmentHistory[id] = newHistory;
+    this.saveData();
     return newHistory;
   }
 
   async updateEmploymentHistory(id: string, history: Partial<InsertEmploymentHistory>): Promise<EmploymentHistory> {
-    const existing = this.employmentHistory.get(id);
+    const existing = this.data.employmentHistory[id];
     if (!existing) {
       throw new Error(`Employment history with id ${id} not found`);
     }
     const updated: EmploymentHistory = { ...existing, ...history };
-    this.employmentHistory.set(id, updated);
+    this.data.employmentHistory[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteEmploymentHistory(id: string): Promise<void> {
-    this.employmentHistory.delete(id);
+    delete this.data.employmentHistory[id];
+    this.saveData();
   }
 
   // Compensation operations
   async getCompensationByEmployeeId(employeeId: string): Promise<Compensation[]> {
-    return Array.from(this.compensation.values()).filter(comp => comp.employeeId === employeeId);
+    return Object.values(this.data.compensation).filter(comp => comp.employeeId === employeeId);
   }
 
   async createCompensation(compensation: InsertCompensation): Promise<Compensation> {
     const id = randomUUID();
     const newCompensation: Compensation = { ...compensation, id };
-    this.compensation.set(id, newCompensation);
+    this.data.compensation[id] = newCompensation;
+    this.saveData();
     return newCompensation;
   }
 
   async updateCompensation(id: string, compensation: Partial<InsertCompensation>): Promise<Compensation> {
-    const existing = this.compensation.get(id);
+    const existing = this.data.compensation[id];
     if (!existing) {
       throw new Error(`Compensation with id ${id} not found`);
     }
     const updated: Compensation = { ...existing, ...compensation };
-    this.compensation.set(id, updated);
+    this.data.compensation[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteCompensation(id: string): Promise<void> {
-    this.compensation.delete(id);
+    delete this.data.compensation[id];
+    this.saveData();
   }
 
   // Time off operations
   async getTimeOffByEmployeeId(employeeId: string): Promise<TimeOff[]> {
-    return Array.from(this.timeOff.values()).filter(timeOff => timeOff.employeeId === employeeId);
+    return Object.values(this.data.timeOff).filter(timeOff => timeOff.employeeId === employeeId);
   }
 
   async createTimeOff(timeOff: InsertTimeOff): Promise<TimeOff> {
     const id = randomUUID();
     const newTimeOff: TimeOff = { ...timeOff, id };
-    this.timeOff.set(id, newTimeOff);
+    this.data.timeOff[id] = newTimeOff;
+    this.saveData();
     return newTimeOff;
   }
 
   async updateTimeOff(id: string, timeOff: Partial<InsertTimeOff>): Promise<TimeOff> {
-    const existing = this.timeOff.get(id);
+    const existing = this.data.timeOff[id];
     if (!existing) {
       throw new Error(`Time off with id ${id} not found`);
     }
     const updated: TimeOff = { ...existing, ...timeOff };
-    this.timeOff.set(id, updated);
+    this.data.timeOff[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteTimeOff(id: string): Promise<void> {
-    this.timeOff.delete(id);
+    delete this.data.timeOff[id];
+    this.saveData();
   }
 
   // Document operations
   async getDocumentsByEmployeeId(employeeId: string): Promise<Document[]> {
-    return Array.from(this.documents.values()).filter(doc => doc.employeeId === employeeId);
+    return Object.values(this.data.documents).filter(doc => doc.employeeId === employeeId);
   }
 
   async createDocument(document: InsertDocument): Promise<Document> {
     const id = randomUUID();
     const newDocument: Document = { ...document, id };
-    this.documents.set(id, newDocument);
+    this.data.documents[id] = newDocument;
+    this.saveData();
     return newDocument;
   }
 
   async updateDocument(id: string, document: Partial<InsertDocument>): Promise<Document> {
-    const existing = this.documents.get(id);
+    const existing = this.data.documents[id];
     if (!existing) {
       throw new Error(`Document with id ${id} not found`);
     }
     const updated: Document = { ...existing, ...document };
-    this.documents.set(id, updated);
+    this.data.documents[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteDocument(id: string): Promise<void> {
-    this.documents.delete(id);
+    delete this.data.documents[id];
+    this.saveData();
   }
 
   // Benefit operations
   async getBenefitsByEmployeeId(employeeId: string): Promise<Benefit[]> {
-    return Array.from(this.benefits.values()).filter(benefit => benefit.employeeId === employeeId);
+    return Object.values(this.data.benefits).filter(benefit => benefit.employeeId === employeeId);
   }
 
   async createBenefit(benefit: InsertBenefit): Promise<Benefit> {
     const id = randomUUID();
     const newBenefit: Benefit = { ...benefit, id };
-    this.benefits.set(id, newBenefit);
+    this.data.benefits[id] = newBenefit;
+    this.saveData();
     return newBenefit;
   }
 
   async updateBenefit(id: string, benefit: Partial<InsertBenefit>): Promise<Benefit> {
-    const existing = this.benefits.get(id);
+    const existing = this.data.benefits[id];
     if (!existing) {
       throw new Error(`Benefit with id ${id} not found`);
     }
     const updated: Benefit = { ...existing, ...benefit };
-    this.benefits.set(id, updated);
+    this.data.benefits[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteBenefit(id: string): Promise<void> {
-    this.benefits.delete(id);
+    delete this.data.benefits[id];
+    this.saveData();
   }
 
   // Training operations
   async getTrainingByEmployeeId(employeeId: string): Promise<Training[]> {
-    console.log("getTrainingByEmployeeId called for:", employeeId);
-    console.log("Current training map size:", this.training.size);
-    if (this.training.size === 0) {
-      console.log("Training map empty, reinitializing sample data");
-      this.initializeSampleData();
-    }
-    const trainings = Array.from(this.training.values()).filter(training => training.employeeId === employeeId);
-    console.log("Trainings for employee", employeeId, ":", trainings);
-    return trainings;
+    return Object.values(this.data.training).filter(training => training.employeeId === employeeId);
   }
 
   async createTraining(training: InsertTraining): Promise<Training> {
     const id = randomUUID();
     const newTraining: Training = { ...training, id };
-    this.training.set(id, newTraining);
+    this.data.training[id] = newTraining;
+    this.saveData();
     return newTraining;
   }
 
   async updateTraining(id: string, training: Partial<InsertTraining>): Promise<Training> {
-    const existing = this.training.get(id);
+    const existing = this.data.training[id];
     if (!existing) {
       throw new Error(`Training with id ${id} not found`);
     }
     const updated: Training = { ...existing, ...training };
-    this.training.set(id, updated);
+    this.data.training[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteTraining(id: string): Promise<void> {
-    this.training.delete(id);
+    delete this.data.training[id];
+    this.saveData();
   }
 
   // Asset operations
   async getAssetsByEmployeeId(employeeId: string): Promise<Asset[]> {
-    return Array.from(this.assets.values()).filter(asset => asset.employeeId === employeeId);
+    return Object.values(this.data.assets).filter(asset => asset.employeeId === employeeId);
   }
 
   async createAsset(asset: InsertAsset): Promise<Asset> {
     const id = randomUUID();
     const newAsset: Asset = { ...asset, id };
-    this.assets.set(id, newAsset);
+    this.data.assets[id] = newAsset;
+    this.saveData();
     return newAsset;
   }
 
   async updateAsset(id: string, asset: Partial<InsertAsset>): Promise<Asset> {
-    const existing = this.assets.get(id);
+    const existing = this.data.assets[id];
     if (!existing) {
       throw new Error(`Asset with id ${id} not found`);
     }
     const updated: Asset = { ...existing, ...asset };
-    this.assets.set(id, updated);
+    this.data.assets[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteAsset(id: string): Promise<void> {
-    this.assets.delete(id);
+    delete this.data.assets[id];
+    this.saveData();
   }
 
   // Note operations
   async getNotesByEmployeeId(employeeId: string): Promise<Note[]> {
-    return Array.from(this.notes.values()).filter(note => note.employeeId === employeeId);
+    return Object.values(this.data.notes).filter(note => note.employeeId === employeeId);
   }
 
   async createNote(note: InsertNote): Promise<Note> {
     const id = randomUUID();
     const newNote: Note = { ...note, id };
-    this.notes.set(id, newNote);
+    this.data.notes[id] = newNote;
+    this.saveData();
     return newNote;
   }
 
   async updateNote(id: string, note: Partial<InsertNote>): Promise<Note> {
-    const existing = this.notes.get(id);
+    const existing = this.data.notes[id];
     if (!existing) {
       throw new Error(`Note with id ${id} not found`);
     }
     const updated: Note = { ...existing, ...note };
-    this.notes.set(id, updated);
+    this.data.notes[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteNote(id: string): Promise<void> {
-    this.notes.delete(id);
+    delete this.data.notes[id];
+    this.saveData();
   }
 
   // Emergency contact operations
   async getEmergencyContactsByEmployeeId(employeeId: string): Promise<EmergencyContact[]> {
-    return Array.from(this.emergencyContacts.values()).filter(contact => contact.employeeId === employeeId);
+    return Object.values(this.data.emergencyContacts).filter(contact => contact.employeeId === employeeId);
   }
 
   async createEmergencyContact(contact: InsertEmergencyContact): Promise<EmergencyContact> {
     const id = randomUUID();
     const newContact: EmergencyContact = { ...contact, id };
-    this.emergencyContacts.set(id, newContact);
+    this.data.emergencyContacts[id] = newContact;
+    this.saveData();
     return newContact;
   }
 
   async updateEmergencyContact(id: string, contact: Partial<InsertEmergencyContact>): Promise<EmergencyContact> {
-    const existing = this.emergencyContacts.get(id);
+    const existing = this.data.emergencyContacts[id];
     if (!existing) {
       throw new Error(`Emergency contact with id ${id} not found`);
     }
     const updated: EmergencyContact = { ...existing, ...contact };
-    this.emergencyContacts.set(id, updated);
+    this.data.emergencyContacts[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteEmergencyContact(id: string): Promise<void> {
-    this.emergencyContacts.delete(id);
+    delete this.data.emergencyContacts[id];
+    this.saveData();
   }
 
   // Onboarding operations
   async getOnboardingByEmployeeId(employeeId: string): Promise<Onboarding[]> {
-    return Array.from(this.onboarding.values()).filter(item => item.employeeId === employeeId);
+    return Object.values(this.data.onboarding).filter(onboarding => onboarding.employeeId === employeeId);
   }
 
   async createOnboarding(onboarding: InsertOnboarding): Promise<Onboarding> {
     const id = randomUUID();
     const newOnboarding: Onboarding = { ...onboarding, id };
-    this.onboarding.set(id, newOnboarding);
+    this.data.onboarding[id] = newOnboarding;
+    this.saveData();
     return newOnboarding;
   }
 
   async updateOnboarding(id: string, onboarding: Partial<InsertOnboarding>): Promise<Onboarding> {
-    const existing = this.onboarding.get(id);
+    const existing = this.data.onboarding[id];
     if (!existing) {
       throw new Error(`Onboarding with id ${id} not found`);
     }
     const updated: Onboarding = { ...existing, ...onboarding };
-    this.onboarding.set(id, updated);
+    this.data.onboarding[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteOnboarding(id: string): Promise<void> {
-    this.onboarding.delete(id);
+    delete this.data.onboarding[id];
+    this.saveData();
   }
 
   // Offboarding operations
   async getOffboardingByEmployeeId(employeeId: string): Promise<Offboarding[]> {
-    return Array.from(this.offboarding.values()).filter(item => item.employeeId === employeeId);
+    return Object.values(this.data.offboarding).filter(offboarding => offboarding.employeeId === employeeId);
   }
 
   async createOffboarding(offboarding: InsertOffboarding): Promise<Offboarding> {
     const id = randomUUID();
     const newOffboarding: Offboarding = { ...offboarding, id };
-    this.offboarding.set(id, newOffboarding);
+    this.data.offboarding[id] = newOffboarding;
+    this.saveData();
     return newOffboarding;
   }
 
   async updateOffboarding(id: string, offboarding: Partial<InsertOffboarding>): Promise<Offboarding> {
-    const existing = this.offboarding.get(id);
+    const existing = this.data.offboarding[id];
     if (!existing) {
       throw new Error(`Offboarding with id ${id} not found`);
     }
     const updated: Offboarding = { ...existing, ...offboarding };
-    this.offboarding.set(id, updated);
+    this.data.offboarding[id] = updated;
+    this.saveData();
     return updated;
   }
 
   async deleteOffboarding(id: string): Promise<void> {
-    this.offboarding.delete(id);
+    delete this.data.offboarding[id];
+    this.saveData();
   }
 }
-
-export const storage = new FileStorage();

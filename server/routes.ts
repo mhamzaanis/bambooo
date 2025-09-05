@@ -218,10 +218,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 });
 
+// GET /api/employees/:employeeId/compensation
 app.get("/api/employees/:employeeId/compensation", async (req, res) => {
   try {
     console.log("Handling GET /api/employees/:employeeId/compensation for:", req.params.employeeId);
     const compensation = await storage.getCompensationByEmployeeId(req.params.employeeId);
+    if (!compensation) {
+      return res.status(404).json({ error: "Compensation not found" });
+    }
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
     res.json(compensation);
   } catch (error) {
@@ -230,6 +234,7 @@ app.get("/api/employees/:employeeId/compensation", async (req, res) => {
   }
 });
 
+// POST /api/employees/:employeeId/compensation
 app.post("/api/employees/:employeeId/compensation", async (req, res) => {
   try {
     console.log("Handling POST /api/employees/:employeeId/compensation for:", req.params.employeeId);
@@ -239,18 +244,22 @@ app.post("/api/employees/:employeeId/compensation", async (req, res) => {
     }
     const compensation = await storage.createCompensation(data);
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-    res.json(compensation);
+    res.status(201).json(compensation);
   } catch (error) {
     console.error("Error in POST /api/employees/:employeeId/compensation:", error);
-    res.status(500).json({ error: "Failed to create compensation" });
+    res.status(400).json({ error: `Invalid compensation data: ${error.message}` });
   }
 });
 
+// PATCH /api/compensation/:id
 app.patch("/api/compensation/:id", async (req, res) => {
   try {
     console.log("Handling PATCH /api/compensation/:id for:", req.params.id);
     const data = insertCompensationSchema.partial().parse(req.body);
     const compensation = await storage.updateCompensation(req.params.id, data);
+    if (!compensation) {
+      return res.status(404).json({ error: "Compensation not found" });
+    }
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
     res.json(compensation);
   } catch (error) {
@@ -259,10 +268,14 @@ app.patch("/api/compensation/:id", async (req, res) => {
   }
 });
 
+// DELETE /api/compensation/:id
 app.delete("/api/compensation/:id", async (req, res) => {
   try {
     console.log("Handling DELETE /api/compensation/:id for:", req.params.id);
-    await storage.deleteCompensation(req.params.id);
+    const deleted = await storage.deleteCompensation(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ error: "Compensation not found" });
+    }
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
     res.status(204).send();
   } catch (error) {
@@ -270,47 +283,6 @@ app.delete("/api/compensation/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete compensation" });
   }
 });
-
-  // Compensation routes
-  app.get("/api/employees/:employeeId/compensation", async (req, res) => {
-    try {
-      const compensation = await storage.getCompensationByEmployeeId(req.params.employeeId);
-      res.json(compensation);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch compensation" });
-    }
-  });
-
-  app.post("/api/employees/:employeeId/compensation", async (req, res) => {
-    try {
-      const compensationData = insertCompensationSchema.parse({
-        ...req.body,
-        employeeId: req.params.employeeId,
-      });
-      const compensation = await storage.createCompensation(compensationData);
-      res.status(201).json(compensation);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid compensation data" });
-    }
-  });
-
-  app.patch("/api/compensation/:id", async (req, res) => {
-    try {
-      const compensation = await storage.updateCompensation(req.params.id, req.body);
-      res.json(compensation);
-    } catch (error) {
-      res.status(404).json({ error: "Compensation not found" });
-    }
-  });
-
-  app.delete("/api/compensation/:id", async (req, res) => {
-    try {
-      await storage.deleteCompensation(req.params.id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(404).json({ error: "Compensation not found" });
-    }
-  });
 
   // Time off routes
   app.get("/api/employees/:employeeId/time-off", async (req, res) => {
@@ -448,18 +420,18 @@ app.delete("/api/compensation/:id", async (req, res) => {
     }
   });
 
-  app.post("/api/employees/:employeeId/training", async (req, res) => {
-    try {
-      const trainingData = insertTrainingSchema.parse({
-        ...req.body,
-        employeeId: req.params.employeeId,
-      });
-      const training = await storage.createTraining(trainingData);
-      res.status(201).json(training);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid training data" });
-    }
-  });
+  // app.post("/api/employees/:employeeId/training", async (req, res) => {
+  //   try {
+  //     const trainingData = insertTrainingSchema.parse({
+  //       ...req.body,
+  //       employeeId: req.params.employeeId,
+  //     });
+  //     const training = await storage.createTraining(trainingData);
+  //     res.status(201).json(training);
+  //   } catch (error) {
+  //     res.status(400).json({ error: "Invalid training data" });
+  //   }
+  // });
 
   app.post("/api/employees/:employeeId/training", async (req, res) => {
     try {

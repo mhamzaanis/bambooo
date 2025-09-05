@@ -9,11 +9,72 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { apiRequest } from "@/lib/queryClient";
-import { User, MapPin, Phone, Link, GraduationCap, FileText, Plus, Save } from "lucide-react";
+import { User, MapPin, Phone, Link, GraduationCap, FileText, Plus, Save, AlertCircle } from "lucide-react";
 import type { Employee, Education, InsertEducation } from "@shared/schema";
 
 interface PersonalTabProps {
   employeeId: string;
+}
+
+// Enhanced validation functions
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  return emailRegex.test(email);
+};
+
+const validatePhone = (phone: string): boolean => {
+  // Remove all non-digit characters for validation
+  const digitsOnly = phone.replace(/\D/g, '');
+  return digitsOnly.length >= 10 && digitsOnly.length <= 15;
+};
+
+const validateZipCode = (zipCode: string): boolean => {
+  // US ZIP code format: 12345 or 12345-6789
+  const zipRegex = /^\d{5}(-\d{4})?$/;
+  return zipRegex.test(zipCode);
+};
+
+const validateSSN = (ssn: string): boolean => {
+  // SSN format: XXX-XX-XXXX
+  const ssnDigits = ssn.replace(/\D/g, '');
+  return ssnDigits.length === 9;
+};
+
+const validateURL = (url: string): boolean => {
+  if (!url) return true; // Empty URL is valid
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+// Input formatting functions
+const formatPhone = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length === 0) return '';
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+};
+
+const formatSSN = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length === 0) return '';
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 5) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5, 9)}`;
+};
+
+const formatZipCode = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5, 9)}`;
+};
+
+interface ValidationErrors {
+  [key: string]: string;
 }
 
 export default function PersonalTab({ employeeId }: PersonalTabProps) {
@@ -23,8 +84,10 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
   const [editingEducation, setEditingEducation] = useState<Education | null>(null);
   const [formData, setFormData] = useState<Partial<Employee>>({});
   const [hasChanges, setHasChanges] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [originalData, setOriginalData] = useState<Partial<Employee>>({});
 
-  const { data: employee } = useQuery<Employee>({
+  const { data: employee, isLoading } = useQuery<Employee>({
     queryKey: ["/api/employees", employeeId],
   });
 
@@ -35,22 +98,30 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
   // Initialize form data when employee data loads
   useEffect(() => {
     if (employee) {
-      setFormData(employee);
+      const clonedData = JSON.parse(JSON.stringify(employee));
+      setFormData(clonedData);
+      // Create a separate deep copy for originalData to prevent reference sharing
+      setOriginalData(JSON.parse(JSON.stringify(employee)));
       setHasChanges(false);
+      setValidationErrors({});
     }
   }, [employee]);
 
   const updateEmployeeMutation = useMutation({
     mutationFn: async (data: Partial<Employee>) => {
       const response = await apiRequest("PATCH", `/api/employees/${employeeId}`, data);
-      return response.json();
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (updatedEmployee) => {
       queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId] });
+      setFormData(updatedEmployee);
+      setOriginalData(JSON.parse(JSON.stringify(updatedEmployee)));
       setHasChanges(false);
+      setValidationErrors({});
       toast({ title: "Success", description: "Employee information updated successfully" });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Update error:', error);
       toast({ title: "Error", description: "Failed to update employee information", variant: "destructive" });
     },
   });
@@ -58,11 +129,12 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
   const createEducationMutation = useMutation({
     mutationFn: async (data: InsertEducation) => {
       const response = await apiRequest("POST", `/api/employees/${employeeId}/education`, data);
-      return response.json();
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId, "education"] });
       setShowEducationForm(false);
+      setEditingEducation(null);
       toast({ title: "Success", description: "Education added successfully" });
     },
     onError: () => {
@@ -73,11 +145,12 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
   const updateEducationMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Education> }) => {
       const response = await apiRequest("PATCH", `/api/education/${id}`, data);
-      return response.json();
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId, "education"] });
       setEditingEducation(null);
+      setShowEducationForm(false);
       toast({ title: "Success", description: "Education updated successfully" });
     },
     onError: () => {
@@ -87,7 +160,8 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
 
   const deleteEducationMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/education/${id}`);
+      const response = await apiRequest("DELETE", `/api/education/${id}`);
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId, "education"] });
@@ -98,8 +172,24 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
     },
   });
 
+  // Helper function to normalize data for comparison
+  const normalizeData = (data: any): any => {
+    if (data === null || data === undefined) return null;
+    if (typeof data === 'string') return data.trim() || '';
+    if (typeof data === 'object' && !Array.isArray(data)) {
+      const normalized: any = {};
+      for (const key in data) {
+        normalized[key] = normalizeData(data[key]);
+      }
+      return normalized;
+    }
+    return data;
+  };
+
   const handleFieldChange = (field: string, value: any) => {
-    if (!formData) return;
+    if (!formData) {
+      return;
+    }
 
     const updatedFormData = { ...formData };
     
@@ -124,17 +214,104 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
     }
 
     setFormData(updatedFormData);
-    setHasChanges(true);
+    
+    // Clear validation error for this field
+    if (validationErrors[field]) {
+      const newErrors = { ...validationErrors };
+      delete newErrors[field];
+      setValidationErrors(newErrors);
+    }
+    
+    // Check if data has changed from original using normalized comparison
+    const normalizedUpdated = normalizeData(updatedFormData);
+    const normalizedOriginal = normalizeData(originalData);
+    const hasDataChanged = JSON.stringify(normalizedUpdated) !== JSON.stringify(normalizedOriginal);
+    
+    setHasChanges(hasDataChanged);
+  };
+
+  const validateForm = (): boolean => {
+    const errors: ValidationErrors = {};
+
+    // Required field validations
+    if (!formData.firstName?.trim()) {
+      errors.firstName = "First name is required";
+    } else if (!/^[a-zA-Z\s'-]+$/.test(formData.firstName)) {
+      errors.firstName = "First name can only contain letters, spaces, hyphens, and apostrophes";
+    }
+
+    if (!formData.lastName?.trim()) {
+      errors.lastName = "Last name is required";
+    } else if (!/^[a-zA-Z\s'-]+$/.test(formData.lastName)) {
+      errors.lastName = "Last name can only contain letters, spaces, hyphens, and apostrophes";
+    }
+
+    if (!formData.email?.trim()) {
+      errors.email = "Email is required";
+    } else if (!validateEmail(formData.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    // Optional field validations (only validate if not empty)
+    const phoneFields = [
+      { key: "profileData.contact.workPhone", label: "work phone" },
+      { key: "profileData.contact.mobilePhone", label: "mobile phone" },
+      { key: "profileData.contact.homePhone", label: "home phone" }
+    ];
+
+    phoneFields.forEach(({ key, label }) => {
+      const value = key.split('.').reduce((obj: any, prop) => obj?.[prop], formData) as string;
+      if (value && !validatePhone(value)) {
+        errors[key] = `Please enter a valid ${label} number`;
+      }
+    });
+
+    if (formData.profileData?.contact?.personalEmail && !validateEmail(formData.profileData.contact.personalEmail)) {
+      errors["profileData.contact.personalEmail"] = "Please enter a valid personal email address";
+    }
+
+    if (formData.profileData?.address?.zipCode && !validateZipCode(formData.profileData.address.zipCode)) {
+      errors["profileData.address.zipCode"] = "Please enter a valid ZIP code (12345 or 12345-6789)";
+    }
+
+    if (formData.profileData?.personal?.ssn && !validateSSN(formData.profileData.personal.ssn)) {
+      errors["profileData.personal.ssn"] = "Please enter a valid SSN (XXX-XX-XXXX)";
+    }
+
+    const urlFields = [
+      { key: "profileData.social.linkedin", label: "LinkedIn URL" },
+      { key: "profileData.social.twitter", label: "Twitter URL" },
+      { key: "profileData.social.website", label: "Website URL" }
+    ];
+
+    urlFields.forEach(({ key, label }) => {
+      const value = key.split('.').reduce((obj: any, prop) => obj?.[prop], formData) as string;
+      if (value && !validateURL(value)) {
+        errors[key] = `Please enter a valid ${label}`;
+      }
+    });
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSaveChanges = () => {
+    if (!validateForm()) {
+      toast({ 
+        title: "Validation Error", 
+        description: "Please fix the validation errors before saving", 
+        variant: "destructive" 
+      });
+      return;
+    }
     updateEmployeeMutation.mutate(formData);
   };
 
   const handleDiscardChanges = () => {
-    if (employee) {
-      setFormData(employee);
+    if (originalData) {
+      setFormData(JSON.parse(JSON.stringify(originalData)));
       setHasChanges(false);
+      setValidationErrors({});
     }
   };
 
@@ -152,6 +329,12 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
       description: formDataElement.get("description") as string,
     };
 
+    // Validate required fields
+    if (!educationData.institution.trim()) {
+      toast({ title: "Error", description: "Institution is required", variant: "destructive" });
+      return;
+    }
+
     if (editingEducation) {
       updateEducationMutation.mutate({ id: editingEducation.id, data: educationData });
     } else {
@@ -167,12 +350,17 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
     { key: "endDate" as keyof Education, header: "End Date" },
   ];
 
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-64">Loading...</div>;
+  }
+
   if (!employee || !formData) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-64">Employee not found</div>;
   }
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
+
       {/* Basic Information */}
       <Card>
         <CardHeader>
@@ -184,41 +372,86 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName" className="flex items-center">
+                First Name <span className="text-red-500 ml-1">*</span>
+              </Label>
               <Input
                 id="firstName"
                 value={formData.firstName || ""}
-                onChange={(e) => handleFieldChange("firstName", e.target.value)}
+                onChange={(e) => {
+                  // Only allow letters, spaces, hyphens, and apostrophes
+                  const value = e.target.value.replace(/[^a-zA-Z\s'-]/g, '');
+                  handleFieldChange("firstName", value);
+                }}
                 data-testid="input-firstName"
+                className={validationErrors.firstName ? "border-red-500" : ""}
+                required
+                maxLength={50}
               />
+              {validationErrors.firstName && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors.firstName}
+                </p>
+              )}
             </div>
             <div>
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName" className="flex items-center">
+                Last Name <span className="text-red-500 ml-1">*</span>
+              </Label>
               <Input
                 id="lastName"
                 value={formData.lastName || ""}
-                onChange={(e) => handleFieldChange("lastName", e.target.value)}
+                onChange={(e) => {
+                  // Only allow letters, spaces, hyphens, and apostrophes
+                  const value = e.target.value.replace(/[^a-zA-Z\s'-]/g, '');
+                  handleFieldChange("lastName", value);
+                }}
                 data-testid="input-lastName"
+                className={validationErrors.lastName ? "border-red-500" : ""}
+                required
+                maxLength={50}
               />
+              {validationErrors.lastName && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors.lastName}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="preferredName">Preferred Name</Label>
               <Input
                 id="preferredName"
                 value={formData.profileData?.personal?.preferredName || ""}
-                onChange={(e) => handleFieldChange("profileData.personal.preferredName", e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^a-zA-Z\s'-]/g, '');
+                  handleFieldChange("profileData.personal.preferredName", value);
+                }}
                 data-testid="input-preferredName"
+                maxLength={50}
               />
             </div>
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="flex items-center">
+                Email <span className="text-red-500 ml-1">*</span>
+              </Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email || ""}
-                onChange={(e) => handleFieldChange("email", e.target.value)}
+                onChange={(e) => handleFieldChange("email", e.target.value.toLowerCase())}
                 data-testid="input-email"
+                className={validationErrors.email ? "border-red-500" : ""}
+                required
+                maxLength={100}
               />
+              {validationErrors.email && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors.email}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="gender">Gender</Label>
@@ -232,6 +465,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 <SelectContent>
                   <SelectItem value="Male">Male</SelectItem>
                   <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="Non-binary">Non-binary</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                   <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
                 </SelectContent>
@@ -245,6 +479,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 value={formData.profileData?.personal?.dateOfBirth || ""}
                 onChange={(e) => handleFieldChange("profileData.personal.dateOfBirth", e.target.value)}
                 data-testid="input-dateOfBirth"
+                max={new Date().toISOString().split('T')[0]} // Prevent future dates
               />
             </div>
             <div>
@@ -261,18 +496,30 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                   <SelectItem value="Married">Married</SelectItem>
                   <SelectItem value="Divorced">Divorced</SelectItem>
                   <SelectItem value="Widowed">Widowed</SelectItem>
+                  <SelectItem value="Separated">Separated</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="ssn">SSN</Label>
+              <Label htmlFor="ssn">Social Security Number</Label>
               <Input
                 id="ssn"
                 placeholder="XXX-XX-XXXX"
                 value={formData.profileData?.personal?.ssn || ""}
-                onChange={(e) => handleFieldChange("profileData.personal.ssn", e.target.value)}
+                onChange={(e) => {
+                  const formatted = formatSSN(e.target.value);
+                  handleFieldChange("profileData.personal.ssn", formatted);
+                }}
                 data-testid="input-ssn"
+                className={validationErrors["profileData.personal.ssn"] ? "border-red-500" : ""}
+                maxLength={11}
               />
+              {validationErrors["profileData.personal.ssn"] && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors["profileData.personal.ssn"]}
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -295,6 +542,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 value={formData.profileData?.address?.street || ""}
                 onChange={(e) => handleFieldChange("profileData.address.street", e.target.value)}
                 data-testid="input-street"
+                maxLength={200}
               />
             </div>
             <div>
@@ -302,8 +550,12 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="city"
                 value={formData.profileData?.address?.city || ""}
-                onChange={(e) => handleFieldChange("profileData.address.city", e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^a-zA-Z\s'-]/g, '');
+                  handleFieldChange("profileData.address.city", value);
+                }}
                 data-testid="input-city"
+                maxLength={100}
               />
             </div>
             <div>
@@ -311,18 +563,34 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="state"
                 value={formData.profileData?.address?.state || ""}
-                onChange={(e) => handleFieldChange("profileData.address.state", e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                  handleFieldChange("profileData.address.state", value);
+                }}
                 data-testid="input-state"
+                maxLength={50}
               />
             </div>
             <div>
               <Label htmlFor="zipCode">ZIP Code</Label>
               <Input
                 id="zipCode"
+                placeholder="12345 or 12345-6789"
                 value={formData.profileData?.address?.zipCode || ""}
-                onChange={(e) => handleFieldChange("profileData.address.zipCode", e.target.value)}
+                onChange={(e) => {
+                  const formatted = formatZipCode(e.target.value);
+                  handleFieldChange("profileData.address.zipCode", formatted);
+                }}
                 data-testid="input-zipCode"
+                className={validationErrors["profileData.address.zipCode"] ? "border-red-500" : ""}
+                maxLength={10}
               />
+              {validationErrors["profileData.address.zipCode"] && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors["profileData.address.zipCode"]}
+                </p>
+              )}
             </div>
             <div className="md:col-span-2 lg:col-span-1">
               <Label htmlFor="country">Country</Label>
@@ -337,6 +605,11 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                   <SelectItem value="United States">United States</SelectItem>
                   <SelectItem value="Canada">Canada</SelectItem>
                   <SelectItem value="Mexico">Mexico</SelectItem>
+                  <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                  <SelectItem value="Australia">Australia</SelectItem>
+                  <SelectItem value="Germany">Germany</SelectItem>
+                  <SelectItem value="France">France</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -349,7 +622,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Phone className="h-5 w-5 mr-2 text-primary" />
-            Contact
+            Contact Information
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -359,40 +632,85 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               <Input
                 id="workPhone"
                 type="tel"
+                placeholder="(123) 456-7890"
                 value={formData.profileData?.contact?.workPhone || formData.phone || ""}
-                onChange={(e) => handleFieldChange("profileData.contact.workPhone", e.target.value)}
+                onChange={(e) => {
+                  const formatted = formatPhone(e.target.value);
+                  handleFieldChange("profileData.contact.workPhone", formatted);
+                }}
                 data-testid="input-workPhone"
+                className={validationErrors["profileData.contact.workPhone"] ? "border-red-500" : ""}
+                maxLength={14}
               />
+              {validationErrors["profileData.contact.workPhone"] && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors["profileData.contact.workPhone"]}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="mobilePhone">Mobile Phone</Label>
               <Input
                 id="mobilePhone"
                 type="tel"
+                placeholder="(123) 456-7890"
                 value={formData.profileData?.contact?.mobilePhone || ""}
-                onChange={(e) => handleFieldChange("profileData.contact.mobilePhone", e.target.value)}
+                onChange={(e) => {
+                  const formatted = formatPhone(e.target.value);
+                  handleFieldChange("profileData.contact.mobilePhone", formatted);
+                }}
                 data-testid="input-mobilePhone"
+                className={validationErrors["profileData.contact.mobilePhone"] ? "border-red-500" : ""}
+                maxLength={14}
               />
+              {validationErrors["profileData.contact.mobilePhone"] && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors["profileData.contact.mobilePhone"]}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="homePhone">Home Phone</Label>
               <Input
                 id="homePhone"
                 type="tel"
+                placeholder="(123) 456-7890"
                 value={formData.profileData?.contact?.homePhone || ""}
-                onChange={(e) => handleFieldChange("profileData.contact.homePhone", e.target.value)}
+                onChange={(e) => {
+                  const formatted = formatPhone(e.target.value);
+                  handleFieldChange("profileData.contact.homePhone", formatted);
+                }}
                 data-testid="input-homePhone"
+                className={validationErrors["profileData.contact.homePhone"] ? "border-red-500" : ""}
+                maxLength={14}
               />
+              {validationErrors["profileData.contact.homePhone"] && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors["profileData.contact.homePhone"]}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="personalEmail">Personal Email</Label>
               <Input
                 id="personalEmail"
                 type="email"
+                placeholder="personal@example.com"
                 value={formData.profileData?.contact?.personalEmail || ""}
-                onChange={(e) => handleFieldChange("profileData.contact.personalEmail", e.target.value)}
+                onChange={(e) => handleFieldChange("profileData.contact.personalEmail", e.target.value.toLowerCase())}
                 data-testid="input-personalEmail"
+                className={validationErrors["profileData.contact.personalEmail"] ? "border-red-500" : ""}
+                maxLength={100}
               />
+              {validationErrors["profileData.contact.personalEmail"] && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors["profileData.contact.personalEmail"]}
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -409,37 +727,61 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
-              <Label htmlFor="linkedin">LinkedIn</Label>
+              <Label htmlFor="linkedin">LinkedIn Profile</Label>
               <Input
                 id="linkedin"
                 type="url"
-                placeholder="LinkedIn URL"
+                placeholder="https://linkedin.com/in/username"
                 value={formData.profileData?.social?.linkedin || ""}
                 onChange={(e) => handleFieldChange("profileData.social.linkedin", e.target.value)}
                 data-testid="input-linkedin"
+                className={validationErrors["profileData.social.linkedin"] ? "border-red-500" : ""}
+                maxLength={200}
               />
+              {validationErrors["profileData.social.linkedin"] && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors["profileData.social.linkedin"]}
+                </p>
+              )}
             </div>
             <div>
-              <Label htmlFor="twitter">Twitter</Label>
+              <Label htmlFor="twitter">Twitter Profile</Label>
               <Input
                 id="twitter"
                 type="url"
-                placeholder="Twitter URL"
+                placeholder="https://twitter.com/username"
                 value={formData.profileData?.social?.twitter || ""}
                 onChange={(e) => handleFieldChange("profileData.social.twitter", e.target.value)}
                 data-testid="input-twitter"
+                className={validationErrors["profileData.social.twitter"] ? "border-red-500" : ""}
+                maxLength={200}
               />
+              {validationErrors["profileData.social.twitter"] && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors["profileData.social.twitter"]}
+                </p>
+              )}
             </div>
             <div>
-              <Label htmlFor="website">Website</Label>
+              <Label htmlFor="website">Personal Website</Label>
               <Input
                 id="website"
                 type="url"
-                placeholder="Website URL"
+                placeholder="https://www.example.com"
                 value={formData.profileData?.social?.website || ""}
                 onChange={(e) => handleFieldChange("profileData.social.website", e.target.value)}
                 data-testid="input-website"
+                className={validationErrors["profileData.social.website"] ? "border-red-500" : ""}
+                maxLength={200}
               />
+              {validationErrors["profileData.social.website"] && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors["profileData.social.website"]}
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -454,7 +796,10 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               Education
             </CardTitle>
             <Button
-              onClick={() => setShowEducationForm(true)}
+              onClick={() => {
+                setShowEducationForm(true);
+                setEditingEducation(null);
+              }}
               size="sm"
               data-testid="button-add-education"
             >
@@ -465,16 +810,36 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
         </CardHeader>
         <CardContent>
           {showEducationForm && (
-            <form onSubmit={handleEducationSubmit} className="mb-6 p-4 border rounded-lg space-y-4">
+            <form onSubmit={handleEducationSubmit} className="mb-6 p-4 border rounded-lg space-y-4 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">
+                  {editingEducation ? "Edit Education" : "Add New Education"}
+                </h3>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowEducationForm(false);
+                    setEditingEducation(null);
+                  }}
+                  data-testid="button-close-education-form"
+                >
+                  ×
+                </Button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="institution">Institution</Label>
+                  <Label htmlFor="institution" className="flex items-center">
+                    Institution <span className="text-red-500 ml-1">*</span>
+                  </Label>
                   <Input
                     id="institution"
                     name="institution"
                     defaultValue={editingEducation?.institution || ""}
                     required
                     data-testid="input-institution"
+                    maxLength={200}
                   />
                 </div>
                 <div>
@@ -484,6 +849,8 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                     name="degree"
                     defaultValue={editingEducation?.degree || ""}
                     data-testid="input-degree"
+                    maxLength={100}
+                    placeholder="e.g., Bachelor's, Master's, PhD"
                   />
                 </div>
                 <div>
@@ -493,6 +860,8 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                     name="fieldOfStudy"
                     defaultValue={editingEducation?.fieldOfStudy || ""}
                     data-testid="input-fieldOfStudy"
+                    maxLength={100}
+                    placeholder="e.g., Computer Science, Business"
                   />
                 </div>
                 <div>
@@ -503,6 +872,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                     type="date"
                     defaultValue={editingEducation?.startDate || ""}
                     data-testid="input-startDate"
+                    max={new Date().toISOString().split('T')[0]}
                   />
                 </div>
                 <div>
@@ -513,22 +883,32 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                     type="date"
                     defaultValue={editingEducation?.endDate || ""}
                     data-testid="input-endDate"
+                    max={new Date().toISOString().split('T')[0]}
                   />
                 </div>
               </div>
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Description (Optional)</Label>
                 <Textarea
                   id="description"
                   name="description"
-                  placeholder="Additional information about your education"
+                  placeholder="Additional information about your education (achievements, GPA, relevant coursework, etc.)"
                   defaultValue={editingEducation?.description || ""}
                   data-testid="textarea-description"
+                  maxLength={500}
+                  rows={3}
                 />
               </div>
               <div className="flex space-x-2">
-                <Button type="submit" data-testid="button-save-education">
-                  {editingEducation ? "Update" : "Add"} Education
+                <Button 
+                  type="submit" 
+                  data-testid="button-save-education"
+                  disabled={createEducationMutation.isPending || updateEducationMutation.isPending}
+                >
+                  {createEducationMutation.isPending || updateEducationMutation.isPending 
+                    ? "Saving..." 
+                    : (editingEducation ? "Update Education" : "Add Education")
+                  }
                 </Button>
                 <Button
                   type="button"
@@ -553,7 +933,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               setShowEducationForm(true);
             }}
             onDelete={(item) => deleteEducationMutation.mutate(item.id)}
-            emptyMessage="No education information available"
+            emptyMessage="No education information available. Click 'Add Education' to get started."
           />
         </CardContent>
       </Card>
@@ -563,7 +943,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
         <CardHeader>
           <CardTitle className="flex items-center">
             <FileText className="h-5 w-5 mr-2 text-primary" />
-            Visa Information
+            Visa & Work Authorization
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -579,38 +959,43 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="US Citizen">US Citizen</SelectItem>
+                  <SelectItem value="Permanent Resident">Permanent Resident (Green Card)</SelectItem>
                   <SelectItem value="H1B">H1B</SelectItem>
                   <SelectItem value="L1">L1</SelectItem>
-                  <SelectItem value="Green Card">Green Card</SelectItem>
+                  <SelectItem value="F1">F1 (Student)</SelectItem>
+                  <SelectItem value="J1">J1 (Exchange Visitor)</SelectItem>
+                  <SelectItem value="TN">TN (NAFTA)</SelectItem>
+                  <SelectItem value="O1">O1 (Extraordinary Ability)</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="visaStatus">Visa Status</Label>
+              <Label htmlFor="visaStatus">Work Authorization Status</Label>
               <Select
                 value={formData.profileData?.visa?.status || ""}
                 onValueChange={(value) => handleFieldChange("profileData.visa.status", value)}
               >
                 <SelectTrigger data-testid="select-visaStatus">
-                  <SelectValue placeholder="Select visa status" />
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="Expired">Expired</SelectItem>
+                  <SelectItem value="Authorized">Authorized to Work</SelectItem>
+                  <SelectItem value="Pending">Authorization Pending</SelectItem>
+                  <SelectItem value="Expired">Authorization Expired</SelectItem>
                   <SelectItem value="Not Applicable">Not Applicable</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="visaExpiration">Expiration Date</Label>
+              <Label htmlFor="visaExpiration">Authorization Expiration Date</Label>
               <Input
                 id="visaExpiration"
                 type="date"
                 value={formData.profileData?.visa?.expiration || ""}
                 onChange={(e) => handleFieldChange("profileData.visa.expiration", e.target.value)}
                 data-testid="input-visaExpiration"
+                min={new Date().toISOString().split('T')[0]}
               />
             </div>
             <div>
@@ -620,11 +1005,11 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 onValueChange={(value) => handleFieldChange("profileData.visa.sponsorshipRequired", value === "Yes")}
               >
                 <SelectTrigger data-testid="select-sponsorshipRequired">
-                  <SelectValue placeholder="Select sponsorship requirement" />
+                  <SelectValue placeholder="Select requirement" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="No">No</SelectItem>
-                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No Sponsorship Required</SelectItem>
+                  <SelectItem value="Yes">Sponsorship Required</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -632,32 +1017,71 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
         </CardContent>
       </Card>
 
-      {/* Save/Discard Changes Buttons */}
+      {/* Save/Discard Changes - Desktop Floating Card */}
       {hasChanges && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-yellow-800">
-                You have unsaved changes. Click "Save Changes" to save or "Discard Changes" to cancel.
+        <div className="fixed bottom-6 right-6 z-50 hidden md:block">
+          <Card className="border-amber-200 bg-amber-50 shadow-lg dark:border-amber-600 dark:bg-amber-900/20">
+            <CardContent className="pt-4 pb-4 px-6">
+              <div className="flex items-center justify-between space-x-4">
+                <div className="flex items-center text-sm text-amber-800 dark:text-amber-200">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  You have unsaved changes
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={handleDiscardChanges}
+                    variant="outline"
+                    size="sm"
+                    data-testid="button-discard-changes"
+                    className="border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                  >
+                    Discard Changes
+                  </Button>
+                  <Button
+                    onClick={handleSaveChanges}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    data-testid="button-save-changes"
+                    disabled={updateEmployeeMutation.isPending}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {updateEmployeeMutation.isPending ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Save/Discard Changes - Mobile Sticky Bottom */}
+      {hasChanges && (
+        <Card className="border-amber-200 bg-amber-50 sticky bottom-0 z-40 md:hidden dark:border-amber-600 dark:bg-amber-900/20">
+          <CardContent className="pt-4 pb-4">
+            <div className="flex flex-col space-y-3">
+              <div className="text-sm text-amber-800 text-center flex items-center justify-center dark:text-amber-200">
+                <AlertCircle className="h-4 w-4 mr-2" />
+                You have unsaved changes
               </div>
               <div className="flex space-x-2">
                 <Button
                   onClick={handleDiscardChanges}
                   variant="outline"
                   size="sm"
-                  data-testid="button-discard-changes"
+                  className="flex-1 border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                  data-testid="button-discard-changes-mobile"
                 >
                   Discard Changes
                 </Button>
                 <Button
                   onClick={handleSaveChanges}
                   size="sm"
-                  className="bg-green-600 hover:bg-green-700"
-                  data-testid="button-save-changes"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  data-testid="button-save-changes-mobile"
                   disabled={updateEmployeeMutation.isPending}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {updateEmployeeMutation.isPending ? "Saving..." : "Save Changes"}
+                  {updateEmployeeMutation.isPending ? "Saving..." : "Save"}
                 </Button>
               </div>
             </div>

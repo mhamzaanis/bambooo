@@ -1,0 +1,204 @@
+{
+  "employees": {
+    "emp-1": {
+      "id": "emp-1",
+      "firstName": "Muhammad Hamza ",
+      "lastName": "Anis",
+      "email": "mhamza292156@gmail.com",
+      "phone": "801-724-6600 x 123",
+      "jobTitle": "HR Administrator",
+      "department": "Operations",
+      "location": "Salt Lake City, Utah",
+      "hireDate": "2022-10-11",
+      "profileData": {
+        "personal": {
+          "preferredName": "Hamza",
+          "gender": "Male",
+          "dateOfBirth": "1995-03-15",
+          "maritalStatus": "Single",
+          "ssn": "555-55-5555"
+        },
+        "address": {
+          "street": "123 Main Street ",
+          "city": "Salt Lake City",
+          "state": "Utah ",
+          "zipCode": "84101-5555",
+          "country": "United Kingdom"
+        },
+        "contact": {
+          "workPhone": "(801) 724-6600",
+          "mobilePhone": "(801) 724-6600",
+          "homePhone": "(555) 555-5555",
+          "personalEmail": "hamza@gmail.com"
+        },
+        "social": {
+          "linkedin": "https://linkedin.com/in/hamza-anis",
+          "twitter": "https://twitter.com/hamza_anis",
+          "website": ""
+        },
+        "visa": {
+          "type": "US Citizen",
+          "status": "Active",
+          "expiration": "",
+          "sponsorshipRequired": false
+        }
+      },
+      "createdAt": "2025-09-05T09:57:23.684Z",
+      "updatedAt": "2025-09-05T11:02:49.997Z"
+    }
+  },
+  "education": {
+    "94cb45f1-4f0f-4e98-a864-57938f4cdbd3": {
+      "employeeId": "emp-1",
+      "institution": "Bahria Uni",
+      "degree": "BSCS",
+      "fieldOfStudy": "comp sci",
+      "startDate": "",
+      "endDate": "",
+      "description": "",
+      "id": "94cb45f1-4f0f-4e98-a864-57938f4cdbd3"
+    }
+  },
+  "employmentHistory": {},
+  "compensation": {},
+  "timeOff": {},
+  "documents": {},
+  "benefits": {},
+  "training": {
+    "96215358-7862-4901-b827-ea83c9138f40": {
+      "id": "96215358-7862-4901-b827-ea83c9138f40",
+      "employeeId": "emp-1",
+      "name": "Unlawful Harassment",
+      "category": "General",
+      "status": "Completed",
+      "dueDate": "2025-12-02",
+      "completedDate": "2025-09-05",
+      "credits": "1.0"
+    },
+    "68540de6-c80c-4c2b-af8f-835c39b49f17": {
+      "id": "68540de6-c80c-4c2b-af8f-835c39b49f17",
+      "employeeId": "emp-1",
+      "name": "BambooHR Advantage Package Demo Video",
+      "category": "BambooHR Product Training",
+      "status": "Pending",
+      "dueDate": "",
+      "completedDate": "",
+      "credits": "0.5"
+    },
+    "81973073-f6d2-42da-aed0-db5f8e91619f": {
+      "id": "81973073-f6d2-42da-aed0-db5f8e91619f",
+      "employeeId": "emp-1",
+      "name": "Quarterly Security Training",
+      "category": "BambooHR Product Training",
+      "status": "Pending",
+      "dueDate": "2025-11-18",
+      "completedDate": "",
+      "credits": "1.0"
+    },
+    "c3512602-3196-48fe-bb16-51e9701bb911": {
+      "id": "c3512602-3196-48fe-bb16-51e9701bb911",
+      "employeeId": "emp-1",
+      "name": "Sexual Harassment Training",
+      "category": "Quarterly Training",
+      "status": "Pending",
+      "dueDate": "2022-11-10",
+      "completedDate": "",
+      "credits": "1.0"
+    },
+    "b67a222b-d1f5-465e-ab11-e60a82631082": {
+      "id": "b67a222b-d1f5-465e-ab11-e60a82631082",
+      "employeeId": "emp-1",
+      "name": "Annual Security Training",
+      "category": "Required Annual Trainings",
+      "status": "Pending",
+      "dueDate": "",
+      "completedDate": "",
+      "credits": "1.0"
+    },
+    "955de96e-c31b-40d3-97b1-6635a698cc77": {
+      "id": "955de96e-c31b-40d3-97b1-6635a698cc77",
+      "employeeId": "emp-1",
+      "name": "HIPAA Training",
+      "category": "Required Annual Trainings",
+      "status": "Pending",
+      "dueDate": "",
+      "completedDate": "",
+      "credits": "1.0"
+    },
+    "8898fa5c-11bb-47cd-9986-43bc68430d51": {
+      "id": "8898fa5c-11bb-47cd-9986-43bc68430d51",
+      "employeeId": "emp-1",
+      "name": "OSHA Training",
+      "category": "Required Annual Trainings",
+      "status": "Pending",
+      "dueDate": "2022-10-14",
+      "completedDate": "",
+      "credits": "1.0"
+    },
+    "d529c975-0d21-4add-a5a1-6b947b6168c7": {
+      "id": "d529c975-0d21-4add-a5a1-6b947b6168c7",
+      "employeeId": "emp-1",
+      "name": "Unlawful Harassment",
+      "category": "General",
+      "status": "Completed",
+      "dueDate": "2025-12-02",
+      "completedDate": "2025-12-02",
+      "credits": "1.0"
+    },
+    "28b5d13a-6a9e-4805-85b4-59119741ce95": {
+      "id": "28b5d13a-6a9e-4805-85b4-59119741ce95",
+      "employeeId": "emp-1",
+      "name": "Quarterly Security Training",
+      "category": "BambooHR Product Training",
+      "status": "Completed",
+      "dueDate": "2025-08-19",
+      "completedDate": "2025-08-19",
+      "credits": "1.0"
+    },
+    "eab8010f-e9f4-47ea-8b93-b31bb1ce90e6": {
+      "id": "eab8010f-e9f4-47ea-8b93-b31bb1ce90e6",
+      "employeeId": "emp-1",
+      "name": "Getting Started in BambooHR",
+      "category": "BambooHR Product Training",
+      "status": "Completed",
+      "dueDate": "2025-08-19",
+      "completedDate": "2025-08-19",
+      "credits": "0.5"
+    },
+    "e7bbacc2-6bcf-4a87-acea-88d88aef64c8": {
+      "id": "e7bbacc2-6bcf-4a87-acea-88d88aef64c8",
+      "employeeId": "emp-1",
+      "name": "Working from home during COVID-19",
+      "category": "COVID-19",
+      "status": "Completed",
+      "dueDate": "2025-08-19",
+      "completedDate": "2025-08-19",
+      "credits": "0.5"
+    }
+  },
+  "assets": {},
+  "notes": {},
+  "emergencyContacts": {},
+  "onboarding": {},
+  "offboarding": {},
+  "bonuses": {
+    "5d90af1e-a5f8-43ce-a5b7-031a1b943158": {
+      "id": "5d90af1e-a5f8-43ce-a5b7-031a1b943158",
+      "employeeId": "emp-1",
+      "type": "Performance Bonus",
+      "amount": "$5000",
+      "frequency": "One-time",
+      "eligibilityDate": "2025-09-01",
+      "description": "For outstanding project delivery"
+    },
+    "1b492b62-d4a2-43fb-882d-c3db0fded739": {
+      "id": "1b492b62-d4a2-43fb-882d-c3db0fded739",
+      "employeeId": "emp-1",
+      "type": "Annual Bonus",
+      "amount": "$10000",
+      "frequency": "Annual",
+      "eligibilityDate": "2025-12-31",
+      "description": "Year-end performance bonus"
+    }
+  }
+}
