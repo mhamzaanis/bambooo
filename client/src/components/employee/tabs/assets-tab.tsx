@@ -138,7 +138,7 @@ export default function AssetsTab({ employeeId }: AssetsTabProps) {
   ];
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 flex items-center">
@@ -172,7 +172,7 @@ export default function AssetsTab({ employeeId }: AssetsTabProps) {
           {/* Asset Form */}
           {showAssetForm && (
             <form onSubmit={handleAssetSubmit} className="mb-6 p-4 border rounded-lg space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="category">Category</Label>
                   <Select name="category" defaultValue={editingAsset?.category || ""}>

@@ -177,9 +177,12 @@ export default function EmergencyContactsTab({ employeeId }: EmergencyContactsTa
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Emergency Contacts</h2>
+        <h2 className="text-2xl font-bold flex items-center">
+          <Users className="h-6 w-6 mr-2 text-primary" />
+          Emergency Contacts
+        </h2>
         <Button onClick={() => setShowContactForm(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Add Contact
@@ -193,7 +196,7 @@ export default function EmergencyContactsTab({ employeeId }: EmergencyContactsTa
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="name">Name *</Label>
                   <Input

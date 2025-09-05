@@ -124,7 +124,7 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
   ];
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       {/* Benefits Overview */}
       <Card>
         <CardHeader>

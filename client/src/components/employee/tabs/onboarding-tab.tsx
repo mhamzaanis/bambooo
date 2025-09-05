@@ -168,9 +168,12 @@ export default function OnboardingTab({ employeeId }: OnboardingTabProps) {
   }, {} as Record<string, OnboardingTask[]>);
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Onboarding</h2>
+        <h2 className="text-2xl font-bold flex items-center">
+          <CheckSquare className="h-6 w-6 mr-2 text-primary" />
+          Onboarding
+        </h2>
       </div>
 
       {/* Progress Overview */}
@@ -188,22 +191,22 @@ export default function OnboardingTab({ employeeId }: OnboardingTabProps) {
               <span>{completedTasks} of {totalTasks} tasks completed</span>
             </div>
             <Progress value={progressPercentage} className="h-2" />
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="text-2xl font-bold text-green-600">{completedTasks}</div>
-                <div className="text-sm text-muted-foreground">Completed</div>
+                <div className="text-sm text-green-700">Completed</div>
               </div>
-              <div>
+              <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
                 <div className="text-2xl font-bold text-orange-600">
                   {onboardingTasks.filter(task => task.status === "in-progress").length}
                 </div>
-                <div className="text-sm text-muted-foreground">In Progress</div>
+                <div className="text-sm text-orange-700">In Progress</div>
               </div>
-              <div>
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="text-2xl font-bold text-gray-600">
                   {onboardingTasks.filter(task => task.status === "pending").length}
                 </div>
-                <div className="text-sm text-muted-foreground">Pending</div>
+                <div className="text-sm text-gray-700">Pending</div>
               </div>
             </div>
           </div>

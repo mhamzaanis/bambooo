@@ -223,7 +223,7 @@ export default function TrainingTab({ employeeId }: TrainingTabProps) {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 flex items-center">
@@ -249,7 +249,7 @@ export default function TrainingTab({ employeeId }: TrainingTabProps) {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleTrainingSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="name">Training Name</Label>
                   <Input

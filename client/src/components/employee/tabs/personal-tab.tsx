@@ -172,7 +172,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       {/* Basic Information */}
       <Card>
         <CardHeader>
@@ -182,7 +182,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <Label htmlFor="firstName">First Name</Label>
               <Input
@@ -287,8 +287,8 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="md:col-span-2 lg:col-span-3">
               <Label htmlFor="street">Street Address</Label>
               <Input
                 id="street"
@@ -324,7 +324,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 data-testid="input-zipCode"
               />
             </div>
-            <div>
+            <div className="md:col-span-2 lg:col-span-1">
               <Label htmlFor="country">Country</Label>
               <Select
                 value={formData.profileData?.address?.country || ""}
@@ -353,7 +353,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div>
               <Label htmlFor="workPhone">Work Phone</Label>
               <Input
@@ -407,7 +407,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <Label htmlFor="linkedin">LinkedIn</Label>
               <Input
@@ -466,7 +466,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
         <CardContent>
           {showEducationForm && (
             <form onSubmit={handleEducationSubmit} className="mb-6 p-4 border rounded-lg space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="institution">Institution</Label>
                   <Input
@@ -567,7 +567,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div>
               <Label htmlFor="visaType">Visa Type</Label>
               <Select

@@ -82,7 +82,7 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
   ];
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <Card>
         <CardHeader>
@@ -113,7 +113,7 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
         </CardHeader>
         <CardContent>
           {/* Document Categories */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             {documentCategories.map((category) => {
               const IconComponent = category.icon;
               return (
@@ -122,12 +122,12 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
                   className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:border-primary/40 transition-colors cursor-pointer"
                   data-testid={`category-${category.name.toLowerCase().replace(/\s+/g, '-')}`}
                 >
-                  <div className="flex items-center space-x-4">
+                  <div className="flex flex-col items-center space-y-3 text-center">
                     <div className={`w-12 h-12 ${category.bgColor} rounded-lg flex items-center justify-center`}>
                       <IconComponent className={`h-6 w-6 ${category.color}`} />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">{category.name}</h3>
+                      <h3 className="font-medium text-gray-900 text-sm">{category.name}</h3>
                       <p className="text-sm text-gray-500">{category.count} items</p>
                     </div>
                   </div>

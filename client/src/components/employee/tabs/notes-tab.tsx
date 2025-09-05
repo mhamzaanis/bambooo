@@ -142,9 +142,12 @@ export default function NotesTab({ employeeId }: NotesTabProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Notes</h2>
+        <h2 className="text-2xl font-bold flex items-center">
+          <FileText className="h-6 w-6 mr-2 text-primary" />
+          Notes
+        </h2>
         <Button onClick={() => setShowNoteForm(true)} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Add Note
@@ -158,24 +161,26 @@ export default function NotesTab({ employeeId }: NotesTabProps) {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={noteData.title}
-                  onChange={(e) => setNoteData({ ...noteData, title: e.target.value })}
-                  placeholder="Enter note title"
-                />
-              </div>
-              <div>
-                <Label htmlFor="content">Content</Label>
-                <Textarea
-                  id="content"
-                  value={noteData.content}
-                  onChange={(e) => setNoteData({ ...noteData, content: e.target.value })}
-                  placeholder="Enter note content"
-                  rows={5}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    value={noteData.title}
+                    onChange={(e) => setNoteData({ ...noteData, title: e.target.value })}
+                    placeholder="Enter note title"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="content">Content</Label>
+                  <Textarea
+                    id="content"
+                    value={noteData.content}
+                    onChange={(e) => setNoteData({ ...noteData, content: e.target.value })}
+                    placeholder="Enter note content"
+                    rows={5}
+                  />
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button type="submit" disabled={addNoteMutation.isPending || updateNoteMutation.isPending}>

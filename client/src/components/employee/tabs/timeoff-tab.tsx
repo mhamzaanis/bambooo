@@ -85,7 +85,7 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
   ];
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       {/* Time Off Balance */}
       <Card>
         <CardHeader>
@@ -95,21 +95,21 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-600 mb-2">Vacation</h3>
-              <div className="text-2xl font-bold text-gray-900">15.5</div>
-              <div className="text-sm text-gray-500">days available</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+            <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+              <h3 className="text-sm font-medium text-blue-700 mb-2">Vacation</h3>
+              <div className="text-3xl font-bold text-blue-900">15.5</div>
+              <div className="text-sm text-blue-600">days available</div>
             </div>
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-600 mb-2">Sick Leave</h3>
-              <div className="text-2xl font-bold text-gray-900">8.0</div>
-              <div className="text-sm text-gray-500">days available</div>
+            <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+              <h3 className="text-sm font-medium text-green-700 mb-2">Sick Leave</h3>
+              <div className="text-3xl font-bold text-green-900">8.0</div>
+              <div className="text-sm text-green-600">days available</div>
             </div>
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-600 mb-2">Personal</h3>
-              <div className="text-2xl font-bold text-gray-900">3.0</div>
-              <div className="text-sm text-gray-500">days available</div>
+            <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+              <h3 className="text-sm font-medium text-purple-700 mb-2">Personal</h3>
+              <div className="text-3xl font-bold text-purple-900">3.0</div>
+              <div className="text-sm text-purple-600">days available</div>
             </div>
           </div>
         </CardContent>
