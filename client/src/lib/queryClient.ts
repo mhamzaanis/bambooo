@@ -19,9 +19,25 @@ export async function apiRequest(method: string, url: string, data?: unknown): P
   console.log(`Response status: ${res.status}`);
 
   await throwIfResNotOk(res);
-  const json = await res.json();
-  console.log(`Response JSON:`, json);
-  return json; // Return parsed JSON instead of Response object
+  
+  // Handle responses with no content (like DELETE operations)
+  if (res.status === 204 || res.headers.get('content-length') === '0') {
+    console.log('Response has no content (204 or empty)');
+    return null;
+  }
+  
+  // Check if response has JSON content
+  const contentType = res.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    const json = await res.json();
+    console.log(`Response JSON:`, json);
+    return json;
+  }
+  
+  // For non-JSON responses, return the text
+  const text = await res.text();
+  console.log(`Response text:`, text);
+  return text;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -48,7 +64,7 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
+      staleTime: 0, // Make data stale immediately so it refetches properly
       retry: false,
     },
     mutations: {

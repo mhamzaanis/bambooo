@@ -148,7 +148,7 @@ export default function EmployeeHeader({
         </div>
       </div>
       {/* Floating Navigation Bar - Shown when scrolled */}
-      <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
+      <div className={`fixed top-8 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
         isScrolled ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}>
         <div className="bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-full px-6 py-3 shadow-lg">

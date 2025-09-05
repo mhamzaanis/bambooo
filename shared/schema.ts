@@ -152,6 +152,16 @@ export const emergencyContacts = pgTable("emergency_contacts", {
   email: text("email"),
   address: text("address"),
 });
+
+export const bonuses = pgTable("bonuses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id),
+  type: text("type"),
+  amount: text("amount"),
+  frequency: text("frequency"),
+  eligibilityDate: text("eligibility_date"),
+  description: text("description"),
+});
 export interface Bonus {
   id: string;
   employeeId: string;
@@ -257,6 +267,10 @@ export const insertOffboardingSchema = createInsertSchema(offboarding).omit({
   id: true,
 });
 
+export const insertBonusSchema2 = createInsertSchema(bonuses).omit({
+  id: true,
+});
+
 // Types
 export type Employee = typeof employees.$inferSelect;
 export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
@@ -284,3 +298,5 @@ export type Onboarding = typeof onboarding.$inferSelect;
 export type InsertOnboarding = z.infer<typeof insertOnboardingSchema>;
 export type Offboarding = typeof offboarding.$inferSelect;
 export type InsertOffboarding = z.infer<typeof insertOffboardingSchema>;
+export type Bonus2 = typeof bonuses.$inferSelect;
+export type InsertBonus2 = z.infer<typeof insertBonusSchema2>;

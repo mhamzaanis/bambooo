@@ -131,8 +131,9 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
       const response = await apiRequest("POST", `/api/employees/${employeeId}/education`, data);
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId, "education"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId, "education"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/employees", employeeId, "education"] });
       setShowEducationForm(false);
       setEditingEducation(null);
       toast({ title: "Success", description: "Education added successfully" });
@@ -147,8 +148,9 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
       const response = await apiRequest("PATCH", `/api/education/${id}`, data);
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId, "education"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId, "education"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/employees", employeeId, "education"] });
       setEditingEducation(null);
       setShowEducationForm(false);
       toast({ title: "Success", description: "Education updated successfully" });
@@ -810,7 +812,11 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
         </CardHeader>
         <CardContent>
           {showEducationForm && (
-            <form onSubmit={handleEducationSubmit} className="mb-6 p-4 border rounded-lg space-y-4 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+            <form 
+              key={editingEducation?.id || 'new'} 
+              onSubmit={handleEducationSubmit} 
+              className="mb-6 p-4 border rounded-lg space-y-4 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"
+            >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">
                   {editingEducation ? "Edit Education" : "Add New Education"}
@@ -899,17 +905,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                   rows={3}
                 />
               </div>
-              <div className="flex space-x-2">
-                <Button 
-                  type="submit" 
-                  data-testid="button-save-education"
-                  disabled={createEducationMutation.isPending || updateEducationMutation.isPending}
-                >
-                  {createEducationMutation.isPending || updateEducationMutation.isPending 
-                    ? "Saving..." 
-                    : (editingEducation ? "Update Education" : "Add Education")
-                  }
-                </Button>
+              <div className="flex justify-end space-x-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -920,6 +916,16 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                   data-testid="button-cancel-education"
                 >
                   Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  data-testid="button-save-education"
+                  disabled={createEducationMutation.isPending || updateEducationMutation.isPending}
+                >
+                  {createEducationMutation.isPending || updateEducationMutation.isPending 
+                    ? "Saving..." 
+                    : (editingEducation ? "Update Education" : "Add Education")
+                  }
                 </Button>
               </div>
             </form>
@@ -1020,10 +1026,10 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
       {/* Save/Discard Changes - Desktop Floating Card */}
       {hasChanges && (
         <div className="fixed bottom-6 right-6 z-50 hidden md:block">
-          <Card className="border-amber-200 bg-amber-50 shadow-lg dark:border-amber-600 dark:bg-amber-900/20">
+          <Card className="backdrop-blur-xl bg-white/5 dark:bg-black/10 shadow-2xl rounded-2xl border-0">
             <CardContent className="pt-4 pb-4 px-6">
               <div className="flex items-center justify-between space-x-4">
-                <div className="flex items-center text-sm text-amber-800 dark:text-amber-200">
+                <div className="flex items-center text-sm text-gray-800 dark:text-amber-200 font-medium">
                   <AlertCircle className="h-4 w-4 mr-2" />
                   You have unsaved changes
                 </div>
@@ -1033,14 +1039,14 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                     variant="outline"
                     size="sm"
                     data-testid="button-discard-changes"
-                    className="border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                    className="backdrop-blur-sm bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-600/50 hover:bg-white/70 dark:hover:bg-gray-800/70 text-gray-700 dark:text-gray-200"
                   >
                     Discard Changes
                   </Button>
                   <Button
                     onClick={handleSaveChanges}
                     size="sm"
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    className="backdrop-blur-sm bg-green-500/90 hover:bg-green-600/90 dark:bg-green-600/90 dark:hover:bg-green-700/90 text-white border border-green-400/30 dark:border-green-500/30 shadow-lg shadow-green-500/25"
                     data-testid="button-save-changes"
                     disabled={updateEmployeeMutation.isPending}
                   >
@@ -1056,10 +1062,10 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
 
       {/* Save/Discard Changes - Mobile Sticky Bottom */}
       {hasChanges && (
-        <Card className="border-amber-200 bg-amber-50 sticky bottom-0 z-40 md:hidden dark:border-amber-600 dark:bg-amber-900/20">
+        <Card className="backdrop-blur-xl bg-white/8 dark:bg-black/15 shadow-2xl sticky bottom-0 z-40 md:hidden border-0">
           <CardContent className="pt-4 pb-4">
             <div className="flex flex-col space-y-3">
-              <div className="text-sm text-amber-800 text-center flex items-center justify-center dark:text-amber-200">
+              <div className="text-sm text-gray-800 dark:text-amber-200 text-center flex items-center justify-center font-medium">
                 <AlertCircle className="h-4 w-4 mr-2" />
                 You have unsaved changes
               </div>
@@ -1068,7 +1074,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                   onClick={handleDiscardChanges}
                   variant="outline"
                   size="sm"
-                  className="flex-1 border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                  className="flex-1 backdrop-blur-sm bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-600/50 hover:bg-white/70 dark:hover:bg-gray-800/70 text-gray-700 dark:text-gray-200"
                   data-testid="button-discard-changes-mobile"
                 >
                   Discard Changes
@@ -1076,7 +1082,7 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 <Button
                   onClick={handleSaveChanges}
                   size="sm"
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  className="flex-1 backdrop-blur-sm bg-green-500/90 hover:bg-green-600/90 dark:bg-green-600/90 dark:hover:bg-green-700/90 text-white border border-green-400/30 dark:border-green-500/30 shadow-lg shadow-green-500/25"
                   data-testid="button-save-changes-mobile"
                   disabled={updateEmployeeMutation.isPending}
                 >

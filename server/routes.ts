@@ -272,10 +272,7 @@ app.patch("/api/compensation/:id", async (req, res) => {
 app.delete("/api/compensation/:id", async (req, res) => {
   try {
     console.log("Handling DELETE /api/compensation/:id for:", req.params.id);
-    const deleted = await storage.deleteCompensation(req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ error: "Compensation not found" });
-    }
+    await storage.deleteCompensation(req.params.id);
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
     res.status(204).send();
   } catch (error) {

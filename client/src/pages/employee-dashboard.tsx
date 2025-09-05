@@ -96,7 +96,7 @@ export default function EmployeeDashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-card border-b border-border px-6 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/90 transition-colors">
+      <header className="bg-card border-b border-border px-6 py-3 backdrop-blur supports-[backdrop-filter]:bg-card/90 transition-colors">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button
