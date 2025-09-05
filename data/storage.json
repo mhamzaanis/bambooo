@@ -213,7 +213,24 @@
       "id": "fd991ccf-1b2b-4dd2-9638-c54b9f9bd6e1"
     }
   },
-  "benefits": {},
+  "benefits": {
+    "7d3173dd-9401-4690-adbe-7c408531d2af": {
+      "employeeId": "emp-1",
+      "type": "Health Insurance",
+      "plan": "High Deductible Health Plan (HDHP)",
+      "status": "Enrolled",
+      "enrollmentDate": "2025-09-05",
+      "id": "7d3173dd-9401-4690-adbe-7c408531d2af"
+    },
+    "892afa5f-68bc-49f4-8615-35c6d806153c": {
+      "employeeId": "emp-1",
+      "type": "Health Insurance",
+      "plan": "PPO Health Plan",
+      "status": "Enrolled",
+      "enrollmentDate": "2025-09-05",
+      "id": "892afa5f-68bc-49f4-8615-35c6d806153c"
+    }
+  },
   "training": {
     "96215358-7862-4901-b827-ea83c9138f40": {
       "id": "96215358-7862-4901-b827-ea83c9138f40",
@@ -230,19 +247,19 @@
       "employeeId": "emp-1",
       "name": "BambooHR Advantage Package Demo Video",
       "category": "BambooHR Product Training",
-      "status": "Pending",
+      "status": "Completed",
       "dueDate": "",
-      "completedDate": "",
-      "credits": "0.5"
+      "completedDate": "2025-09-05",
+      "credits": "2.3"
     },
     "81973073-f6d2-42da-aed0-db5f8e91619f": {
       "id": "81973073-f6d2-42da-aed0-db5f8e91619f",
       "employeeId": "emp-1",
       "name": "Quarterly Security Training",
       "category": "BambooHR Product Training",
-      "status": "Pending",
+      "status": "Completed",
       "dueDate": "2025-11-18",
-      "completedDate": "",
+      "completedDate": "2025-09-05",
       "credits": "1.0"
     },
     "c3512602-3196-48fe-bb16-51e9701bb911": {
@@ -253,7 +270,7 @@
       "status": "Pending",
       "dueDate": "2022-11-10",
       "completedDate": "",
-      "credits": "1.0"
+      "credits": "2"
     },
     "b67a222b-d1f5-465e-ab11-e60a82631082": {
       "id": "b67a222b-d1f5-465e-ab11-e60a82631082",
@@ -280,9 +297,9 @@
       "employeeId": "emp-1",
       "name": "OSHA Training",
       "category": "Required Annual Trainings",
-      "status": "Pending",
+      "status": "Completed",
       "dueDate": "2022-10-14",
-      "completedDate": "",
+      "completedDate": "2025-09-05",
       "credits": "1.0"
     },
     "d529c975-0d21-4add-a5a1-6b947b6168c7": {
@@ -320,15 +337,26 @@
       "employeeId": "emp-1",
       "name": "Working from home during COVID-19",
       "category": "COVID-19",
-      "status": "Completed",
+      "status": "Pending",
       "dueDate": "2025-08-19",
       "completedDate": "2025-08-19",
       "credits": "0.5"
+    },
+    "e08c47cb-518d-4954-a14c-18d69f391755": {
+      "employeeId": "emp-1",
+      "name": "testing",
+      "category": "Quarterly Training",
+      "status": "Completed",
+      "dueDate": "2025-08-08",
+      "completedDate": "2025-09-05",
+      "credits": "4",
+      "id": "e08c47cb-518d-4954-a14c-18d69f391755"
     }
   },
   "assets": {},
   "notes": {},
   "emergencyContacts": {},
+  "dependents": {},
   "onboarding": {},
   "offboarding": {},
   "bonuses": {

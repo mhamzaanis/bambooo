@@ -13,6 +13,7 @@ import {
   insertAssetSchema,
   insertNoteSchema,
   insertEmergencyContactSchema,
+  insertDependentSchema,
   insertOnboardingSchema,
   insertOffboardingSchema,
   insertBonusSchema,
@@ -401,6 +402,71 @@ app.delete("/api/compensation/:id", async (req, res) => {
       res.status(204).send();
     } catch (error) {
       res.status(404).json({ error: "Benefit not found" });
+    }
+  });
+
+  // Dependents routes
+  app.get("/api/employees/:employeeId/dependents", async (req, res) => {
+    try {
+      console.log("=== DEPENDENTS GET REQUEST ===");
+      console.log("Employee ID:", req.params.employeeId);
+      console.log("Storage object:", typeof storage);
+      console.log("getDependentsByEmployeeId method exists:", typeof storage.getDependentsByEmployeeId);
+      
+      if (!storage.getDependentsByEmployeeId) {
+        console.error("getDependentsByEmployeeId method not found on storage object");
+        return res.status(500).json({ error: "Storage method not available" });
+      }
+      
+      const dependents = await storage.getDependentsByEmployeeId(req.params.employeeId);
+      console.log("Dependents fetched successfully:", dependents);
+      res.json(dependents);
+    } catch (error) {
+      console.error("=== DEPENDENTS GET ERROR ===");
+      console.error("Error type:", typeof error);
+      console.error("Error message:", error instanceof Error ? error.message : String(error));
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack');
+      console.error("Full error object:", error);
+      res.status(500).json({ error: "Failed to fetch dependents", details: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  app.post("/api/employees/:employeeId/dependents", async (req, res) => {
+    try {
+      console.log("Creating dependent with data:", req.body);
+      const dependentData = insertDependentSchema.parse({
+        ...req.body,
+        employeeId: req.params.employeeId,
+      });
+      console.log("Parsed dependent data:", dependentData);
+      const dependent = await storage.createDependent(dependentData);
+      console.log("Dependent created successfully:", dependent);
+      res.status(201).json(dependent);
+    } catch (error) {
+      console.error("Error creating dependent:", error);
+      if (error instanceof Error) {
+        res.status(400).json({ error: `Invalid dependent data: ${error.message}` });
+      } else {
+        res.status(400).json({ error: "Invalid dependent data" });
+      }
+    }
+  });
+
+  app.patch("/api/dependents/:id", async (req, res) => {
+    try {
+      const dependent = await storage.updateDependent(req.params.id, req.body);
+      res.json(dependent);
+    } catch (error) {
+      res.status(404).json({ error: "Dependent not found" });
+    }
+  });
+
+  app.delete("/api/dependents/:id", async (req, res) => {
+    try {
+      await storage.deleteDependent(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(404).json({ error: "Dependent not found" });
     }
   });
 

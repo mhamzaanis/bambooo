@@ -23,6 +23,8 @@ import {
   type InsertNote,
   type EmergencyContact,
   type InsertEmergencyContact,
+  type Dependent,
+  type InsertDependent,
   type Onboarding,
   type InsertOnboarding,
   type Offboarding,
@@ -45,6 +47,7 @@ interface StorageData {
   assets: Record<string, Asset>;
   notes: Record<string, Note>;
   emergencyContacts: Record<string, EmergencyContact>;
+  dependents: Record<string, Dependent>;
   onboarding: Record<string, Onboarding>;
   offboarding: Record<string, Offboarding>;
   bonuses: Record<string, Bonus>;
@@ -303,6 +306,7 @@ export class FileStorage implements IStorage {
       assets: {},
       notes: {},
       emergencyContacts: {},
+      dependents: {},
       onboarding: {},
       offboarding: {},
       bonuses: Object.fromEntries(sampleBonuses.map(b => [b.id, b])),
@@ -731,5 +735,50 @@ export class FileStorage implements IStorage {
   async deleteOffboarding(id: string): Promise<void> {
     delete this.data.offboarding[id];
     this.saveData();
+  }
+
+  // Dependent operations
+  async getDependentsByEmployeeId(employeeId: string): Promise<Dependent[]> {
+    return Object.values(this.data.dependents).filter(d => d.employeeId === employeeId);
+  }
+
+  async createDependent(dependent: InsertDependent): Promise<Dependent> {
+    const id = randomUUID();
+    const newDependent: Dependent = { 
+      id,
+      firstName: dependent.firstName,
+      lastName: dependent.lastName,
+      relationship: dependent.relationship,
+      dateOfBirth: dependent.dateOfBirth,
+      employeeId: dependent.employeeId || null,
+      ssn: dependent.ssn || null,
+      gender: dependent.gender || null,
+      isStudent: dependent.isStudent || null,
+      createdAt: new Date()
+    };
+    this.data.dependents[id] = newDependent;
+    this.saveData();
+    return newDependent;
+  }
+
+  async updateDependent(id: string, dependent: Partial<InsertDependent>): Promise<Dependent> {
+    const existing = this.data.dependents[id];
+    if (!existing) {
+      throw new Error(`Dependent with id ${id} not found`);
+    }
+    const updated: Dependent = { ...existing, ...dependent };
+    this.data.dependents[id] = updated;
+    this.saveData();
+    return updated;
+  }
+
+  async deleteDependent(id: string): Promise<void> {
+    delete this.data.dependents[id];
+    this.saveData();
+  }
+
+  // This method is required by IStorage interface but not used in the current implementation
+  async updateJobInfo(employeeId: string, jobInfo: Partial<Employee>): Promise<Employee> {
+    return this.updateEmployee(employeeId, jobInfo);
   }
 }

@@ -21,6 +21,8 @@ import {
   type InsertNote,
   type EmergencyContact,
   type InsertEmergencyContact,
+  type Dependent,
+  type InsertDependent,
   type Onboarding,
   type InsertOnboarding,
   type Offboarding,
@@ -105,6 +107,12 @@ export interface IStorage {
   createEmergencyContact(contact: InsertEmergencyContact): Promise<EmergencyContact>;
   updateEmergencyContact(id: string, contact: Partial<InsertEmergencyContact>): Promise<EmergencyContact>;
   deleteEmergencyContact(id: string): Promise<void>;
+
+  // Dependent operations
+  getDependentsByEmployeeId(employeeId: string): Promise<Dependent[]>;
+  createDependent(dependent: InsertDependent): Promise<Dependent>;
+  updateDependent(id: string, dependent: Partial<InsertDependent>): Promise<Dependent>;
+  deleteDependent(id: string): Promise<void>;
 
   // Onboarding operations
   getOnboardingByEmployeeId(employeeId: string): Promise<Onboarding[]>;

@@ -153,6 +153,19 @@ export const emergencyContacts = pgTable("emergency_contacts", {
   address: text("address"),
 });
 
+export const dependents = pgTable("dependents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  relationship: text("relationship").notNull(),
+  dateOfBirth: text("date_of_birth").notNull(),
+  ssn: text("ssn"),
+  gender: text("gender"),
+  isStudent: boolean("is_student").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const bonuses = pgTable("bonuses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   employeeId: varchar("employee_id").references(() => employees.id),
@@ -259,6 +272,11 @@ export const insertEmergencyContactSchema = createInsertSchema(emergencyContacts
   id: true,
 });
 
+export const insertDependentSchema = createInsertSchema(dependents).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertOnboardingSchema = createInsertSchema(onboarding).omit({
   id: true,
 });
@@ -294,6 +312,8 @@ export type Note = typeof notes.$inferSelect;
 export type InsertNote = z.infer<typeof insertNoteSchema>;
 export type EmergencyContact = typeof emergencyContacts.$inferSelect;
 export type InsertEmergencyContact = z.infer<typeof insertEmergencyContactSchema>;
+export type Dependent = typeof dependents.$inferSelect;
+export type InsertDependent = z.infer<typeof insertDependentSchema>;
 export type Onboarding = typeof onboarding.$inferSelect;
 export type InsertOnboarding = z.infer<typeof insertOnboardingSchema>;
 export type Offboarding = typeof offboarding.$inferSelect;
