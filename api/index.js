@@ -25,20 +25,30 @@ app.use((req, res, next) => {
   }
 });
 
+// In-memory data store (persists during serverless function lifetime)
+let memoryStore = null;
+
 // Helper function to load storage data
 function loadStorageData() {
+  // If we already have data in memory, use it
+  if (memoryStore) {
+    return memoryStore;
+  }
+
   try {
     const dataPath = path.join(process.cwd(), "data", "storage.json");
     if (fs.existsSync(dataPath)) {
       const data = fs.readFileSync(dataPath, "utf-8");
-      return JSON.parse(data);
+      memoryStore = JSON.parse(data);
+      console.log("Loaded data from storage.json into memory");
+      return memoryStore;
     }
   } catch (error) {
     console.error("Error loading storage data:", error);
   }
   
-  // Return demo data if file not found
-  return {
+  // Return minimal demo data if file not found
+  const demoData = {
     employees: {
       "emp-1": {
         id: "emp-1",
@@ -89,21 +99,21 @@ function loadStorageData() {
     offboarding: {},
     bonuses: {}
   };
+  
+  console.log("Using fallback demo data");
+  memoryStore = demoData;
+  return memoryStore;
 }
 
-// Helper function to save storage data
+// Helper function to save storage data (in-memory only for serverless)
 function saveStorageData(data) {
   try {
-    const dataPath = path.join(process.cwd(), "data", "storage.json");
-    // Create data directory if it doesn't exist
-    const dataDir = path.dirname(dataPath);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+    // In serverless environment, we can only save to memory
+    memoryStore = data;
+    console.log("Data saved to memory store successfully");
     return true;
   } catch (error) {
-    console.error("Error saving storage data:", error);
+    console.error("Error saving storage data to memory:", error);
     return false;
   }
 }
