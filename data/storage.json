@@ -524,6 +524,18 @@
       "status": "in-progress",
       "id": "46075277-0c29-4247-8ade-edbbddcd14d7",
       "completedDate": "2025-09-06"
+    },
+    "9a9cbaf5-9256-462c-9fed-0d0852232b6e": {
+      "employeeId": "emp-1",
+      "description": "Testing calendar functionality",
+      "dueDate": "2025-09-15",
+      "id": "9a9cbaf5-9256-462c-9fed-0d0852232b6e"
+    },
+    "7cbe8869-9012-40de-85f7-e98d5c31f498": {
+      "employeeId": "emp-1",
+      "description": "Testing calendar functionality",
+      "dueDate": "2025-09-15",
+      "id": "7cbe8869-9012-40de-85f7-e98d5c31f498"
     }
   },
   "offboarding": {
