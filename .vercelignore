@@ -1,0 +1,9 @@
+node_modules
+.env.local
+.env
+dist
+.git
+*.log
+.DS_Store
+server/index.ts
+attached_assets
