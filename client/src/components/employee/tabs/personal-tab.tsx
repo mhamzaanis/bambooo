@@ -6,10 +6,27 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { apiRequest } from "@/lib/queryClient";
-import { User, MapPin, Phone, Link, GraduationCap, FileText, Plus, Save, AlertCircle } from "lucide-react";
+import { 
+  User, 
+  MapPin, 
+  Phone, 
+  Link, 
+  GraduationCap, 
+  FileText, 
+  Plus, 
+  Save, 
+  AlertCircle,
+  Calendar as CalendarIcon,
+  AlertTriangle
+} from "lucide-react";
+import { format, isValid, parseISO, isBefore, isAfter, addYears } from "date-fns";
+import { cn } from "@/lib/utils";
 import type { Employee, Education, InsertEducation } from "@shared/schema";
 
 interface PersonalTabProps {
@@ -86,6 +103,89 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
   const [hasChanges, setHasChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [originalData, setOriginalData] = useState<Partial<Employee>>({});
+
+  // Date picker states
+  const [dobPickerOpen, setDobPickerOpen] = useState(false);
+  const [visaExpPickerOpen, setVisaExpPickerOpen] = useState(false);
+  const [eduStartPickerOpen, setEduStartPickerOpen] = useState(false);
+  const [eduEndPickerOpen, setEduEndPickerOpen] = useState(false);
+  const [dateErrors, setDateErrors] = useState<{[key: string]: string}>({});
+  
+  // Education form date states
+  const [eduFormStartDate, setEduFormStartDate] = useState<Date | undefined>();
+  const [eduFormEndDate, setEduFormEndDate] = useState<Date | undefined>();
+
+  // Date validation functions
+  const validateDateOfBirth = (date: Date | undefined): string => {
+    if (!date) return "";
+    
+    const today = new Date();
+    const eighteenYearsAgo = addYears(today, -18);
+    const hundredYearsAgo = addYears(today, -100);
+    
+    if (isAfter(date, today)) {
+      return "Date of birth cannot be in the future";
+    }
+    if (isAfter(date, eighteenYearsAgo)) {
+      return "Employee must be at least 18 years old";
+    }
+    if (isBefore(date, hundredYearsAgo)) {
+      return "Date of birth cannot be more than 100 years ago";
+    }
+    
+    return "";
+  };
+
+  const validateVisaExpiration = (date: Date | undefined): string => {
+    if (!date) return "";
+    
+    const today = new Date();
+    const oneYearFromNow = addYears(today, 1);
+    
+    if (isBefore(date, today)) {
+      return "Visa expiration date has already passed";
+    }
+    if (isBefore(date, oneYearFromNow)) {
+      return "Visa expires within one year - consider renewal";
+    }
+    
+    return "";
+  };
+
+  const validateEducationDates = (startDate: Date | undefined, endDate: Date | undefined): {start: string, end: string} => {
+    const errors = { start: "", end: "" };
+    
+    if (startDate && endDate) {
+      if (isAfter(startDate, endDate)) {
+        errors.start = "Start date cannot be after end date";
+        errors.end = "End date cannot be before start date";
+      }
+    }
+    
+    if (endDate) {
+      const today = new Date();
+      if (isAfter(endDate, today)) {
+        errors.end = "End date cannot be in the future";
+      }
+    }
+    
+    return errors;
+  };
+
+  // Helper functions for date handling
+  const parseDate = (dateString: string): Date | undefined => {
+    if (!dateString) return undefined;
+    try {
+      const parsed = parseISO(dateString);
+      return isValid(parsed) ? parsed : undefined;
+    } catch {
+      return undefined;
+    }
+  };
+
+  const formatDateForInput = (date: Date): string => {
+    return format(date, "yyyy-MM-dd");
+  };
 
   const { data: employee, isLoading } = useQuery<Employee>({
     queryKey: ["/api/employees", employeeId],
@@ -475,14 +575,80 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
             </div>
             <div>
               <Label htmlFor="dateOfBirth">Date of Birth</Label>
-              <Input
-                id="dateOfBirth"
-                type="date"
-                value={formData.profileData?.personal?.dateOfBirth || ""}
-                onChange={(e) => handleFieldChange("profileData.personal.dateOfBirth", e.target.value)}
-                data-testid="input-dateOfBirth"
-                max={new Date().toISOString().split('T')[0]} // Prevent future dates
-              />
+              <Popover open={dobPickerOpen} onOpenChange={setDobPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.profileData?.personal?.dateOfBirth && "text-muted-foreground"
+                    )}
+                    type="button"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.profileData?.personal?.dateOfBirth ? (
+                      format(parseISO(formData.profileData.personal.dateOfBirth), "PPP")
+                    ) : (
+                      <span>Pick date of birth</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={parseDate(formData.profileData?.personal?.dateOfBirth || "")}
+                    onSelect={(date) => {
+                      if (date) {
+                        const error = validateDateOfBirth(date);
+                        setDateErrors(prev => ({ ...prev, dob: error }));
+                        
+                        if (!error) {
+                          handleFieldChange("profileData.personal.dateOfBirth", formatDateForInput(date));
+                          setDobPickerOpen(false);
+                        }
+                      }
+                    }}
+                    disabled={(date) => {
+                      // Disable future dates and dates more than 100 years ago
+                      const today = new Date();
+                      const hundredYearsAgo = addYears(today, -100);
+                      return date > today || date < hundredYearsAgo;
+                    }}
+                    initialFocus={false}
+                    fixedWeeks={true}
+                    captionLayout="dropdown-buttons"
+                    fromYear={1924}
+                    toYear={new Date().getFullYear()}
+                  />
+                  <div className="p-3 border-t">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span>Must be 18+ years old</span>
+                    </div>
+                    {formData.profileData?.personal?.dateOfBirth && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="w-full mt-2"
+                        onClick={() => {
+                          handleFieldChange("profileData.personal.dateOfBirth", "");
+                          setDateErrors(prev => ({ ...prev, dob: "" }));
+                        }}
+                      >
+                        Clear Date
+                      </Button>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
+              {dateErrors.dob && (
+                <Alert className="mt-2" variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{dateErrors.dob}</AlertDescription>
+                </Alert>
+              )}
             </div>
             <div>
               <Label htmlFor="maritalStatus">Marital Status</Label>
@@ -801,6 +967,9 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
               onClick={() => {
                 setShowEducationForm(true);
                 setEditingEducation(null);
+                setEduFormStartDate(undefined);
+                setEduFormEndDate(undefined);
+                setDateErrors(prev => ({ ...prev, eduStart: "", eduEnd: "" }));
               }}
               size="sm"
               data-testid="button-add-education"
@@ -872,24 +1041,166 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
                 </div>
                 <div>
                   <Label htmlFor="startDate">Start Date</Label>
-                  <Input
-                    id="startDate"
+                  <Popover open={eduStartPickerOpen} onOpenChange={setEduStartPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !eduFormStartDate && "text-muted-foreground"
+                        )}
+                        type="button"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {eduFormStartDate ? (
+                          format(eduFormStartDate, "PPP")
+                        ) : (
+                          <span>Pick start date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={eduFormStartDate}
+                        onSelect={(date) => {
+                          setEduFormStartDate(date);
+                          if (date && eduFormEndDate) {
+                            const errors = validateEducationDates(date, eduFormEndDate);
+                            setDateErrors(prev => ({ 
+                              ...prev, 
+                              eduStart: errors.start,
+                              eduEnd: errors.end 
+                            }));
+                          }
+                          setEduStartPickerOpen(false);
+                        }}
+                        disabled={(date) => {
+                          // Disable future dates
+                          const today = new Date();
+                          return date > today;
+                        }}
+                        initialFocus={false}
+                        fixedWeeks={true}
+                        captionLayout="dropdown-buttons"
+                        fromYear={1950}
+                        toYear={new Date().getFullYear()}
+                      />
+                      <div className="p-3 border-t">
+                        {eduFormStartDate && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => {
+                              setEduFormStartDate(undefined);
+                              setDateErrors(prev => ({ ...prev, eduStart: "" }));
+                            }}
+                          >
+                            Clear Date
+                          </Button>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
+                  {dateErrors.eduStart && (
+                    <Alert className="mt-2" variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>{dateErrors.eduStart}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {/* Hidden input for form submission */}
+                  <input
+                    type="hidden"
                     name="startDate"
-                    type="date"
-                    defaultValue={editingEducation?.startDate || ""}
-                    data-testid="input-startDate"
-                    max={new Date().toISOString().split('T')[0]}
+                    value={eduFormStartDate ? formatDateForInput(eduFormStartDate) : ""}
                   />
                 </div>
                 <div>
                   <Label htmlFor="endDate">End Date</Label>
-                  <Input
-                    id="endDate"
+                  <Popover open={eduEndPickerOpen} onOpenChange={setEduEndPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !eduFormEndDate && "text-muted-foreground"
+                        )}
+                        type="button"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {eduFormEndDate ? (
+                          format(eduFormEndDate, "PPP")
+                        ) : (
+                          <span>Pick end date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={eduFormEndDate}
+                        onSelect={(date) => {
+                          setEduFormEndDate(date);
+                          if (eduFormStartDate && date) {
+                            const errors = validateEducationDates(eduFormStartDate, date);
+                            setDateErrors(prev => ({ 
+                              ...prev, 
+                              eduStart: errors.start,
+                              eduEnd: errors.end 
+                            }));
+                          }
+                          setEduEndPickerOpen(false);
+                        }}
+                        disabled={(date) => {
+                          // Disable future dates
+                          const today = new Date();
+                          return date > today;
+                        }}
+                        initialFocus={false}
+                        fixedWeeks={true}
+                        captionLayout="dropdown-buttons"
+                        fromYear={1950}
+                        toYear={new Date().getFullYear()}
+                      />
+                      <div className="p-3 border-t">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <AlertTriangle className="h-4 w-4" />
+                          <span>Must be after start date</span>
+                        </div>
+                        {eduFormEndDate && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="w-full mt-2"
+                            onClick={() => {
+                              setEduFormEndDate(undefined);
+                              setDateErrors(prev => ({ ...prev, eduEnd: "" }));
+                            }}
+                          >
+                            Clear Date
+                          </Button>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
+                  {dateErrors.eduEnd && (
+                    <Alert className="mt-2" variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>{dateErrors.eduEnd}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {/* Hidden input for form submission */}
+                  <input
+                    type="hidden"
                     name="endDate"
-                    type="date"
-                    defaultValue={editingEducation?.endDate || ""}
-                    data-testid="input-endDate"
-                    max={new Date().toISOString().split('T')[0]}
+                    value={eduFormEndDate ? formatDateForInput(eduFormEndDate) : ""}
                   />
                 </div>
               </div>
@@ -936,6 +1247,9 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
             data={education}
             onEdit={(item) => {
               setEditingEducation(item);
+              setEduFormStartDate(parseDate(item.startDate || ""));
+              setEduFormEndDate(parseDate(item.endDate || ""));
+              setDateErrors(prev => ({ ...prev, eduStart: "", eduEnd: "" }));
               setShowEducationForm(true);
             }}
             onDelete={(item) => deleteEducationMutation.mutate(item.id)}
@@ -995,14 +1309,75 @@ export default function PersonalTab({ employeeId }: PersonalTabProps) {
             </div>
             <div>
               <Label htmlFor="visaExpiration">Authorization Expiration Date</Label>
-              <Input
-                id="visaExpiration"
-                type="date"
-                value={formData.profileData?.visa?.expiration || ""}
-                onChange={(e) => handleFieldChange("profileData.visa.expiration", e.target.value)}
-                data-testid="input-visaExpiration"
-                min={new Date().toISOString().split('T')[0]}
-              />
+              <Popover open={visaExpPickerOpen} onOpenChange={setVisaExpPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.profileData?.visa?.expiration && "text-muted-foreground"
+                    )}
+                    type="button"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.profileData?.visa?.expiration ? (
+                      format(parseISO(formData.profileData.visa.expiration), "PPP")
+                    ) : (
+                      <span>Pick expiration date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={parseDate(formData.profileData?.visa?.expiration || "")}
+                    onSelect={(date) => {
+                      if (date) {
+                        const error = validateVisaExpiration(date);
+                        setDateErrors(prev => ({ ...prev, visa: error }));
+                        
+                        handleFieldChange("profileData.visa.expiration", formatDateForInput(date));
+                        setVisaExpPickerOpen(false);
+                      }
+                    }}
+                    disabled={(date) => {
+                      // Disable past dates
+                      const yesterday = new Date();
+                      yesterday.setDate(yesterday.getDate() - 1);
+                      return date < yesterday;
+                    }}
+                    initialFocus={false}
+                    fixedWeeks={true}
+                  />
+                  <div className="p-3 border-t">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span>Warning if expires within 1 year</span>
+                    </div>
+                    {formData.profileData?.visa?.expiration && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="w-full mt-2"
+                        onClick={() => {
+                          handleFieldChange("profileData.visa.expiration", "");
+                          setDateErrors(prev => ({ ...prev, visa: "" }));
+                        }}
+                      >
+                        Clear Date
+                      </Button>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
+              {dateErrors.visa && (
+                <Alert className="mt-2" variant={dateErrors.visa.includes("within one year") ? "default" : "destructive"}>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{dateErrors.visa}</AlertDescription>
+                </Alert>
+              )}
             </div>
             <div>
               <Label htmlFor="sponsorshipRequired">Sponsorship Required</Label>
