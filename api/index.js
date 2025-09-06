@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: false }));
 // Add CORS headers for Vercel deployment
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   
   if (req.method === 'OPTIONS') {
@@ -91,6 +91,23 @@ function loadStorageData() {
   };
 }
 
+// Helper function to save storage data
+function saveStorageData(data) {
+  try {
+    const dataPath = path.join(process.cwd(), "data", "storage.json");
+    // Create data directory if it doesn't exist
+    const dataDir = path.dirname(dataPath);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+    return true;
+  } catch (error) {
+    console.error("Error saving storage data:", error);
+    return false;
+  }
+}
+
 // Simple test endpoint for debugging
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!", timestamp: new Date().toISOString() });
@@ -122,6 +139,37 @@ app.get("/api/employees/:id", (req, res) => {
   } catch (error) {
     console.error("Error fetching employee:", error);
     res.status(500).json({ error: "Failed to fetch employee" });
+  }
+});
+
+// Update employee by ID
+app.patch("/api/employees/:id", (req, res) => {
+  try {
+    const data = loadStorageData();
+    const employeeId = req.params.id;
+    
+    if (!data.employees[employeeId]) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+    
+    // Update employee data with the request body
+    data.employees[employeeId] = {
+      ...data.employees[employeeId],
+      ...req.body,
+      id: employeeId // Ensure ID remains unchanged
+    };
+    
+    // Save the updated data back to storage
+    const saved = saveStorageData(data);
+    
+    if (!saved) {
+      return res.status(500).json({ error: "Failed to save employee data" });
+    }
+    
+    res.json(data.employees[employeeId]);
+  } catch (error) {
+    console.error("Error updating employee:", error);
+    res.status(500).json({ error: "Failed to update employee" });
   }
 });
 
