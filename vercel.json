@@ -14,8 +14,7 @@
   ],
   "functions": {
     "api/index.js": {
-      "runtime": "nodejs18.x",
-      "includeFiles": "data/storage.json"
+      "runtime": "nodejs20.x"
     }
   }
 }
