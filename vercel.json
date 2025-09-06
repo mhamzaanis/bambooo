@@ -1,14 +1,7 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist/public"
-      }
-    }
-  ],
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "dist/public",
   "routes": [
     {
       "src": "/api/(.*)",
@@ -24,8 +17,5 @@
       "runtime": "nodejs18.x",
       "includeFiles": "data/storage.json"
     }
-  },
-  "env": {
-    "NODE_ENV": "production"
   }
 }
