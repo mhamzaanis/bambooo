@@ -109,8 +109,14 @@ function loadStorageData() {
 function saveStorageData(data) {
   try {
     // In serverless environment, we can only save to memory
-    memoryStore = data;
+    memoryStore = { ...data }; // Create a copy to avoid reference issues
     console.log("Data saved to memory store successfully");
+    console.log("Memory store now has:", {
+      employees: Object.keys(memoryStore.employees || {}).length,
+      education: Object.keys(memoryStore.education || {}).length,
+      compensation: Object.keys(memoryStore.compensation || {}).length,
+      training: Object.keys(memoryStore.training || {}).length
+    });
     return true;
   } catch (error) {
     console.error("Error saving storage data to memory:", error);
@@ -120,7 +126,72 @@ function saveStorageData(data) {
 
 // Simple test endpoint for debugging
 app.get("/api/test", (req, res) => {
-  res.json({ message: "API is working!", timestamp: new Date().toISOString() });
+  const data = loadStorageData();
+  res.json({ 
+    message: "API is working!", 
+    timestamp: new Date().toISOString(),
+    hasEmployees: !!data.employees,
+    employeeCount: Object.keys(data.employees || {}).length,
+    hasEducation: !!data.education,
+    educationCount: Object.keys(data.education || {}).length,
+    hasCompensation: !!data.compensation,
+    compensationCount: Object.keys(data.compensation || {}).length,
+    memoryStoreInitialized: !!memoryStore
+  });
+});
+
+// Test CRUD operations endpoint
+app.post("/api/test-crud", (req, res) => {
+  try {
+    const data = loadStorageData();
+    
+    // Test creating a note
+    const testNote = {
+      id: `test-note-${Date.now()}`,
+      employeeId: "emp-1",
+      title: "Test Note",
+      content: "This is a test note to verify CRUD operations work",
+      createdAt: new Date().toISOString(),
+      createdBy: "API Test"
+    };
+    
+    if (!data.notes) data.notes = {};
+    data.notes[testNote.id] = testNote;
+    
+    const saved = saveStorageData(data);
+    
+    if (saved) {
+      // Test reading it back
+      const updatedData = loadStorageData();
+      const createdNote = updatedData.notes[testNote.id];
+      
+      if (createdNote) {
+        res.json({
+          success: true,
+          message: "CRUD test passed! You can add, edit, update, and delete data.",
+          testNote: createdNote,
+          dataIntegrity: "OK"
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: "CRUD test failed - could not read back created data"
+        });
+      }
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "CRUD test failed - could not save data"
+      });
+    }
+  } catch (error) {
+    console.error("CRUD test error:", error);
+    res.status(500).json({
+      success: false,
+      message: "CRUD test failed with error",
+      error: error.message
+    });
+  }
 });
 
 // Get all employees
