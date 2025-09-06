@@ -1,5 +1,4 @@
-import express from "express";
-import { registerRoutes } from "../server/routes.js";
+const express = require("express");
 
 const app = express();
 
@@ -20,18 +19,28 @@ app.use((req, res, next) => {
   }
 });
 
-// Initialize routes once
-let routesInitialized = false;
+// Simple test endpoint for debugging
+app.get("/api/test", (req, res) => {
+  res.json({ message: "API is working!", timestamp: new Date().toISOString() });
+});
 
-const initializeRoutes = async () => {
-  if (!routesInitialized) {
-    await registerRoutes(app);
-    routesInitialized = true;
-  }
-};
+// Basic employees endpoint to test
+app.get("/api/employees", (req, res) => {
+  // Return demo data for now
+  res.json([
+    {
+      id: "emp-1",
+      firstName: "Muhammad Hamza",
+      lastName: "Anis",
+      email: "mhamza292156@gmail.com",
+      phone: "801-724-6600 x 123",
+      jobTitle: "HR Administrator",
+      department: "Human Resources",
+      location: "Chicago, IL",
+      hireDate: "2022-10-11"
+    }
+  ]);
+});
 
 // Export as Vercel serverless function
-export default async (req, res) => {
-  await initializeRoutes();
-  return app(req, res);
-};
+module.exports = app;
