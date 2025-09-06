@@ -483,6 +483,19 @@ app.delete("/api/compensation/:id", async (req, res) => {
     }
   });
 
+  // app.post("/api/employees/:employeeId/training", async (req, res) => {
+  //   try {
+  //     const trainingData = insertTrainingSchema.parse({
+  //       ...req.body,
+  //       employeeId: req.params.employeeId,
+  //     });
+  //     const training = await storage.createTraining(trainingData);
+  //     res.status(201).json(training);
+  //   } catch (error) {
+  //     res.status(400).json({ error: "Invalid training data" });
+  //   }
+  // });
+
   app.post("/api/employees/:employeeId/training", async (req, res) => {
     try {
       console.log("Handling POST /api/employees/:employeeId/training for:", req.params.employeeId);
@@ -670,12 +683,30 @@ app.delete("/api/compensation/:id", async (req, res) => {
     }
   });
 
+  app.patch("/api/onboarding/:id", async (req, res) => {
+    try {
+      const onboarding = await storage.updateOnboarding(req.params.id, req.body);
+      res.json(onboarding);
+    } catch (error) {
+      res.status(404).json({ error: "Onboarding not found" });
+    }
+  });
+
   app.patch("/api/employees/:employeeId/onboarding/:taskId", async (req, res) => {
     try {
       const onboarding = await storage.updateOnboarding(req.params.taskId, req.body);
       res.json(onboarding);
     } catch (error) {
       res.status(404).json({ error: "Onboarding task not found" });
+    }
+  });
+
+  app.delete("/api/onboarding/:id", async (req, res) => {
+    try {
+      await storage.deleteOnboarding(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(404).json({ error: "Onboarding not found" });
     }
   });
 
