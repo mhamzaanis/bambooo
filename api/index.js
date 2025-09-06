@@ -20,7 +20,7 @@ app.use((req, res, next) => {
   }
 });
 
-// Initialize routes
+// Initialize routes once
 let routesInitialized = false;
 
 const initializeRoutes = async () => {

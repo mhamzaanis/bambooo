@@ -6,4 +6,5 @@ dist
 *.log
 .DS_Store
 server/index.ts
+server/serverless-storage.ts
 attached_assets
