@@ -248,7 +248,8 @@ app.post("/api/employees/:employeeId/compensation", async (req, res) => {
     res.status(201).json(compensation);
   } catch (error) {
     console.error("Error in POST /api/employees/:employeeId/compensation:", error);
-    res.status(400).json({ error: `Invalid compensation data: ${error.message}` });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(400).json({ error: `Invalid compensation data: ${message}` });
   }
 });
 
