@@ -83,6 +83,18 @@
       "reportsTo": "Sarah Johns",
       "comment": "testing132",
       "id": "99e8de06-6f1d-4372-84f9-2d038ac8555b"
+    },
+    "c5a896db-bbb5-46d9-8eb9-186a0d4e0253": {
+      "employeeId": "emp-1",
+      "effectiveDate": "2025-08-08",
+      "status": "Intern",
+      "location": "fdsfdss",
+      "division": "Europe",
+      "department": "Design",
+      "jobTitle": "dfsfsddsds",
+      "reportsTo": "fdfsfds",
+      "comment": "fdfdsdsfdsd",
+      "id": "c5a896db-bbb5-46d9-8eb9-186a0d4e0253"
     }
   },
   "compensation": {
