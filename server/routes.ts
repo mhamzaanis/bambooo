@@ -692,12 +692,30 @@ app.delete("/api/compensation/:id", async (req, res) => {
     }
   });
 
+  app.patch("/api/employees/:employeeId/onboarding/:taskId", async (req, res) => {
+    try {
+      const onboarding = await storage.updateOnboarding(req.params.taskId, req.body);
+      res.json(onboarding);
+    } catch (error) {
+      res.status(404).json({ error: "Onboarding task not found" });
+    }
+  });
+
   app.delete("/api/onboarding/:id", async (req, res) => {
     try {
       await storage.deleteOnboarding(req.params.id);
       res.status(204).send();
     } catch (error) {
       res.status(404).json({ error: "Onboarding not found" });
+    }
+  });
+
+  app.delete("/api/employees/:employeeId/onboarding/:taskId", async (req, res) => {
+    try {
+      await storage.deleteOnboarding(req.params.taskId);
+      res.status(204).send();
+    } catch (error) {
+      res.status(404).json({ error: "Onboarding task not found" });
     }
   });
 
@@ -724,7 +742,7 @@ app.delete("/api/compensation/:id", async (req, res) => {
     }
   });
 
-  app.patch("/api/offboarding/:id", async (req, res) => {
+  app.patch("/api/employees/:employeeId/offboarding/:id", async (req, res) => {
     try {
       const offboarding = await storage.updateOffboarding(req.params.id, req.body);
       res.json(offboarding);
@@ -733,7 +751,7 @@ app.delete("/api/compensation/:id", async (req, res) => {
     }
   });
 
-  app.delete("/api/offboarding/:id", async (req, res) => {
+  app.delete("/api/employees/:employeeId/offboarding/:id", async (req, res) => {
     try {
       await storage.deleteOffboarding(req.params.id);
       res.status(204).send();

@@ -311,8 +311,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
         },
       ],
       icon: Stethoscope,
-      iconColor: "text-red-600",
-      bgColor: "bg-red-50",
+      iconColor: "text-foreground",
+      bgColor: "bg-muted",
       description: "Comprehensive medical coverage including preventive care, prescriptions, and emergency services"
     },
     {
@@ -364,8 +364,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
         },
       ],
       icon: Heart,
-      iconColor: "text-blue-600",
-      bgColor: "bg-blue-50",
+      iconColor: "text-muted-foreground",
+      bgColor: "bg-muted",
       description: "Dental care including cleanings, fillings, and major dental work"
     },
     {
@@ -395,8 +395,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
         },
       ],
       icon: Eye,
-      iconColor: "text-purple-600",
-      bgColor: "bg-purple-50",
+      iconColor: "text-muted-foreground",
+      bgColor: "bg-muted",
       description: "Eye care coverage including exams, glasses, and contact lenses"
     },
     {
@@ -446,8 +446,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
         },
       ],
       icon: Shield,
-      iconColor: "text-green-600",
-      bgColor: "bg-green-50",
+      iconColor: "text-muted-foreground",
+      bgColor: "bg-muted",
       description: "Life insurance coverage for financial protection"
     },
     {
@@ -477,8 +477,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
         },
       ],
       icon: DollarSign,
-      iconColor: "text-emerald-600",
-      bgColor: "bg-emerald-50",
+      iconColor: "text-muted-foreground",
+      bgColor: "bg-muted",
       description: "Retirement savings with company matching contributions"
     },
     {
@@ -528,8 +528,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
         },
       ],
       icon: Briefcase,
-      iconColor: "text-orange-600",
-      bgColor: "bg-orange-50",
+      iconColor: "text-muted-foreground",
+      bgColor: "bg-muted",
       description: "Income protection in case of illness or injury"
     },
     {
@@ -579,8 +579,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
         },
       ],
       icon: Car,
-      iconColor: "text-teal-600",
-      bgColor: "bg-teal-50",
+      iconColor: "text-muted-foreground",
+      bgColor: "bg-muted",
       description: "Pre-tax savings for healthcare and dependent care expenses"
     },
     {
@@ -651,8 +651,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
         },
       ],
       icon: Gift,
-      iconColor: "text-pink-600",
-      bgColor: "bg-pink-50",
+      iconColor: "text-muted-foreground",
+      bgColor: "bg-muted",
       description: "Additional perks and wellness benefits"
     },
   ];
@@ -698,13 +698,13 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
       case "Enrolled":
         return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800";
       case "Eligible":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 border-blue-200 dark:border-blue-800";
+        return "bg-muted text-muted-foreground border-muted-foreground/20";
       case "Declined":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400 border-gray-200 dark:border-gray-700";
+        return "bg-muted text-muted-foreground border-muted-foreground/20";
       case "Pending":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800";
+        return "bg-muted text-muted-foreground border-muted-foreground/20";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400 border-gray-200 dark:border-gray-700";
+        return "bg-muted text-muted-foreground border-muted-foreground/20";
     }
   };
 
@@ -738,7 +738,7 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Enrolled Plans</p>
+                <p className="text-sm font-medium text-muted-foreground">Enrolled Plans</p>
                 <p className="text-2xl font-bold text-green-600">
                   {benefits.filter(b => b.status === "Enrolled").length}
                 </p>
@@ -752,12 +752,12 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Available Plans</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-sm font-medium text-muted-foreground">Available Plans</p>
+                <p className="text-2xl font-bold text-foreground">
                   {benefitTypes.reduce((acc, type) => acc + type.plans.length, 0)}
                 </p>
               </div>
-              <Shield className="h-8 w-8 text-blue-600" />
+              <Shield className="h-8 w-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -766,10 +766,10 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Open Enrollment</p>
-                <p className="text-sm font-semibold text-orange-600">Nov 1-15</p>
+                <p className="text-sm font-medium text-muted-foreground">Open Enrollment</p>
+                <p className="text-sm font-semibold text-foreground">Nov 1-15</p>
               </div>
-              <Calendar className="h-8 w-8 text-orange-600" />
+              <Calendar className="h-8 w-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -778,10 +778,10 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Benefits Value</p>
-                <p className="text-2xl font-bold text-purple-600">$15K+</p>
+                <p className="text-sm font-medium text-muted-foreground">Benefits Value</p>
+                <p className="text-2xl font-bold text-foreground">$15K+</p>
               </div>
-              <DollarSign className="h-8 w-8 text-purple-600" />
+              <DollarSign className="h-8 w-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -816,8 +816,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
                     <benefitType.icon className={`h-5 w-5 ${benefitType.iconColor}`} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">{benefitType.type}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{benefitType.description}</p>
+                    <h3 className="font-semibold text-foreground">{benefitType.type}</h3>
+                    <p className="text-sm text-muted-foreground">{benefitType.description}</p>
                   </div>
                 </div>
                 
@@ -835,14 +835,14 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
                         className={`border rounded-lg p-4 transition-all duration-200 ${
                           isEnrolled 
                             ? 'border-green-300 bg-green-50 dark:bg-green-950 dark:border-green-800 hover:shadow-md hover:border-green-400 dark:hover:border-green-700' 
-                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm'
+                            : 'border-border hover:border-muted-foreground hover:shadow-sm'
                         }`}
                         data-testid={`benefit-plan-${benefitType.type}-${index}`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center space-x-3">
-                              <h4 className="font-medium text-gray-900 dark:text-gray-100">{plan.name}</h4>
+                              <h4 className="font-medium text-foreground">{plan.name}</h4>
                               <Badge 
                                 className={`${getStatusColor(currentStatus)} text-xs`}
                                 variant="secondary"
@@ -850,7 +850,7 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
                                 {currentStatus}
                               </Badge>
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Cost: {plan.cost}</p>
+                            <p className="text-sm text-muted-foreground mt-1">Cost: {plan.cost}</p>
                           </div>
                           <div className="flex items-center space-x-2">
                             {!isEnrolled && currentStatus !== "Enrolled" && (
@@ -922,8 +922,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
               emptyMessage="No dependents found"
             />
           ) : (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Users className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+            <div className="text-center py-8 text-muted-foreground">
+              <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg font-medium">No dependents on file</p>
               <p className="text-sm">Add dependents to include them in your benefit coverage</p>
             </div>
@@ -948,8 +948,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
               emptyMessage="No current enrollments"
             />
           ) : (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Heart className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+            <div className="text-center py-8 text-muted-foreground">
+              <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg font-medium">No enrollments yet</p>
               <p className="text-sm">Start by enrolling in available benefits above</p>
             </div>
@@ -1176,7 +1176,7 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold">{selectedBenefitDetails.plan}</h3>
-                    <p className="text-sm text-gray-500">{selectedBenefitDetails.type}</p>
+                    <p className="text-sm text-muted-foreground">{selectedBenefitDetails.type}</p>
                   </div>
                 </>
               )}
@@ -1189,13 +1189,13 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
                   <CardContent className="p-4">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Monthly Cost</h4>
-                    <p className="text-2xl font-bold text-green-600">{selectedBenefitDetails.cost}</p>
+                    <h4 className="font-medium text-foreground mb-1">Monthly Cost</h4>
+                    <p className="text-2xl font-bold text-foreground">{selectedBenefitDetails.cost}</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Status</h4>
+                    <h4 className="font-medium text-foreground mb-1">Status</h4>
                     <Badge className={`${getStatusColor(selectedBenefitDetails.status)}`} variant="secondary">
                       {selectedBenefitDetails.status}
                     </Badge>
@@ -1203,8 +1203,8 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
                 </Card>
                 <Card>
                   <CardContent className="p-4">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Coverage</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{selectedBenefitDetails.details.coverage}</p>
+                    <h4 className="font-medium text-foreground mb-1">Coverage</h4>
+                    <p className="text-sm text-muted-foreground">{selectedBenefitDetails.details.coverage}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -1219,38 +1219,38 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {selectedBenefitDetails.details.deductible && (
                         <div>
-                          <h5 className="font-medium text-gray-900 dark:text-gray-100">Deductible</h5>
-                          <p className="text-gray-600 dark:text-gray-400">{selectedBenefitDetails.details.deductible}</p>
+                          <h5 className="font-medium text-foreground">Deductible</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.deductible}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.outOfPocketMax && (
                         <div>
-                          <h5 className="font-medium text-gray-900 dark:text-gray-100">Out-of-Pocket Maximum</h5>
-                          <p className="text-gray-600 dark:text-gray-400">{selectedBenefitDetails.details.outOfPocketMax}</p>
+                          <h5 className="font-medium text-foreground">Out-of-Pocket Maximum</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.outOfPocketMax}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.coinsurance && (
                         <div>
-                          <h5 className="font-medium text-gray-900 dark:text-gray-100">Coinsurance</h5>
-                          <p className="text-gray-600 dark:text-gray-400">{selectedBenefitDetails.details.coinsurance}</p>
+                          <h5 className="font-medium text-foreground">Coinsurance</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.coinsurance}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.primaryCare && (
                         <div>
-                          <h5 className="font-medium text-gray-900 dark:text-gray-100">Primary Care</h5>
-                          <p className="text-gray-600 dark:text-gray-400">{selectedBenefitDetails.details.primaryCare}</p>
+                          <h5 className="font-medium text-foreground">Primary Care</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.primaryCare}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.specialistCare && (
                         <div>
-                          <h5 className="font-medium text-gray-900 dark:text-gray-100">Specialist Care</h5>
-                          <p className="text-gray-600 dark:text-gray-400">{selectedBenefitDetails.details.specialistCare}</p>
+                          <h5 className="font-medium text-foreground">Specialist Care</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.specialistCare}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.prescriptions && (
                         <div>
-                          <h5 className="font-medium text-gray-900 dark:text-gray-100">Prescriptions</h5>
-                          <p className="text-gray-600 dark:text-gray-400">{selectedBenefitDetails.details.prescriptions}</p>
+                          <h5 className="font-medium text-foreground">Prescriptions</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.prescriptions}</p>
                         </div>
                       )}
                     </div>
@@ -1268,38 +1268,38 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {selectedBenefitDetails.details.preventiveCare && (
                         <div>
-                          <h5 className="font-medium text-gray-900">Preventive Care</h5>
-                          <p className="text-gray-600">{selectedBenefitDetails.details.preventiveCare}</p>
+                          <h5 className="font-medium text-foreground">Preventive Care</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.preventiveCare}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.basicServices && (
                         <div>
-                          <h5 className="font-medium text-gray-900">Basic Services</h5>
-                          <p className="text-gray-600">{selectedBenefitDetails.details.basicServices}</p>
+                          <h5 className="font-medium text-foreground">Basic Services</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.basicServices}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.majorServices && (
                         <div>
-                          <h5 className="font-medium text-gray-900">Major Services</h5>
-                          <p className="text-gray-600">{selectedBenefitDetails.details.majorServices}</p>
+                          <h5 className="font-medium text-foreground">Major Services</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.majorServices}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.orthodontics && (
                         <div>
-                          <h5 className="font-medium text-gray-900">Orthodontics</h5>
-                          <p className="text-gray-600">{selectedBenefitDetails.details.orthodontics}</p>
+                          <h5 className="font-medium text-foreground">Orthodontics</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.orthodontics}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.eyeExam && (
                         <div>
-                          <h5 className="font-medium text-gray-900">Eye Exam</h5>
-                          <p className="text-gray-600">{selectedBenefitDetails.details.eyeExam}</p>
+                          <h5 className="font-medium text-foreground">Eye Exam</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.eyeExam}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.frames && (
                         <div>
-                          <h5 className="font-medium text-gray-900">Frames</h5>
-                          <p className="text-gray-600">{selectedBenefitDetails.details.frames}</p>
+                          <h5 className="font-medium text-foreground">Frames</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.frames}</p>
                         </div>
                       )}
                     </div>
@@ -1317,26 +1317,26 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {selectedBenefitDetails.details.benefitAmount && (
                         <div>
-                          <h5 className="font-medium text-gray-900">Benefit Amount</h5>
-                          <p className="text-gray-600">{selectedBenefitDetails.details.benefitAmount}</p>
+                          <h5 className="font-medium text-foreground">Benefit Amount</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.benefitAmount}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.employeeContribution && (
                         <div>
-                          <h5 className="font-medium text-gray-900">Employee Contribution</h5>
-                          <p className="text-gray-600">{selectedBenefitDetails.details.employeeContribution}</p>
+                          <h5 className="font-medium text-foreground">Employee Contribution</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.employeeContribution}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.companyMatch && (
                         <div>
-                          <h5 className="font-medium text-gray-900">Company Match</h5>
-                          <p className="text-gray-600">{selectedBenefitDetails.details.companyMatch}</p>
+                          <h5 className="font-medium text-foreground">Company Match</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.companyMatch}</p>
                         </div>
                       )}
                       {selectedBenefitDetails.details.vestingSchedule && (
                         <div>
-                          <h5 className="font-medium text-gray-900">Vesting Schedule</h5>
-                          <p className="text-gray-600">{selectedBenefitDetails.details.vestingSchedule}</p>
+                          <h5 className="font-medium text-foreground">Vesting Schedule</h5>
+                          <p className="text-muted-foreground">{selectedBenefitDetails.details.vestingSchedule}</p>
                         </div>
                       )}
                     </div>
@@ -1351,7 +1351,7 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
                     <CardTitle className="text-lg">Network & Access</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 dark:text-gray-400">{selectedBenefitDetails.details.network}</p>
+                    <p className="text-muted-foreground">{selectedBenefitDetails.details.network}</p>
                   </CardContent>
                 </Card>
               )}
@@ -1367,7 +1367,7 @@ export default function BenefitsTab({ employeeId }: BenefitsTabProps) {
                       {selectedBenefitDetails.details.features.map((feature: string, index: number) => (
                         <li key={index} className="flex items-start space-x-2">
                           <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                          <span className="text-gray-600 dark:text-gray-400">{feature}</span>
+                          <span className="text-muted-foreground">{feature}</span>
                         </li>
                       ))}
                     </ul>

@@ -124,8 +124,8 @@
       "type": "Sick Leave",
       "startDate": "2025-11-15",
       "endDate": "2025-11-15",
-      "days": "1.0",
-      "status": "Approved",
+      "days": "1",
+      "status": "Denied",
       "comment": "Doctor's appointment"
     },
     "timeoff-3": {
@@ -177,6 +177,16 @@
       "status": "Pending",
       "comment": "testing\n",
       "id": "3bf985f5-c8ea-4260-938c-2bc6a59ba69a"
+    },
+    "e14fd54a-db7a-4e6e-b1b5-ae4500bf6eba": {
+      "employeeId": "emp-1",
+      "type": "Bereavement",
+      "startDate": "2025-09-06",
+      "endDate": "2025-09-06",
+      "days": "1",
+      "status": "Pending",
+      "comment": "testing",
+      "id": "e14fd54a-db7a-4e6e-b1b5-ae4500bf6eba"
     }
   },
   "documents": {
@@ -434,6 +444,13 @@
       "content": "tets",
       "id": "fe527693-3898-4fd8-88b2-11b2473a011a",
       "createdAt": "2025-09-05T20:39:37.946Z"
+    },
+    "459b5ae8-7ac9-43eb-bfb9-d726edc78f99": {
+      "employeeId": "emp-1",
+      "title": "another test",
+      "content": "another test",
+      "id": "459b5ae8-7ac9-43eb-bfb9-d726edc78f99",
+      "createdAt": "2025-09-06T05:51:10.801Z"
     }
   },
   "emergencyContacts": {
@@ -489,8 +506,37 @@
     }
   },
   "dependents": {},
-  "onboarding": {},
-  "offboarding": {},
+  "onboarding": {
+    "f0fe2dc9-16a5-4696-bd41-7a477ca7c03c": {
+      "employeeId": "emp-1",
+      "description": "testing",
+      "dueDate": "2025-08-08",
+      "status": "in-progress",
+      "id": "f0fe2dc9-16a5-4696-bd41-7a477ca7c03c",
+      "task": "Untitled Task test",
+      "completedDate": "2025-09-06"
+    },
+    "46075277-0c29-4247-8ade-edbbddcd14d7": {
+      "employeeId": "emp-1",
+      "task": "test",
+      "description": "test",
+      "dueDate": "2025-09-30",
+      "status": "in-progress",
+      "id": "46075277-0c29-4247-8ade-edbbddcd14d7",
+      "completedDate": "2025-09-06"
+    }
+  },
+  "offboarding": {
+    "efa08989-c4a2-4bfc-8c06-07f2eeb8b6ca": {
+      "employeeId": "emp-1",
+      "task": "eee",
+      "description": "eee",
+      "dueDate": "2025-09-30",
+      "status": "in-progress",
+      "completedDate": "2025-09-06T10:06:41.094Z",
+      "id": "efa08989-c4a2-4bfc-8c06-07f2eeb8b6ca"
+    }
+  },
   "bonuses": {
     "1b492b62-d4a2-43fb-882d-c3db0fded739": {
       "id": "1b492b62-d4a2-43fb-882d-c3db0fded739",

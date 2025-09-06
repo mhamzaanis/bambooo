@@ -160,36 +160,36 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
       name: "Employee Uploads",
       icon: UploadCloud,
       count: documents.filter(d => d.category === "Employee Uploads").length,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted",
     },
     {
       name: "Resumes and Applications",
       icon: File,
       count: documents.filter(d => d.category === "Resumes and Applications").length,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted",
     },
     {
       name: "Signed Documents",
       icon: PenTool,
       count: documents.filter(d => d.category === "Signed Documents").length,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted",
     },
     {
       name: "Tasklist Attachments",
       icon: Folder,
       count: documents.filter(d => d.category === "Tasklist Attachments").length,
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted",
     },
     {
       name: "Workflow Attachments",
       icon: Folder,
       count: documents.filter(d => d.category === "Workflow Attachments").length,
-      color: "text-red-600",
-      bgColor: "bg-red-100",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted",
     },
   ];
 
@@ -197,9 +197,9 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
     <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
       {/* Debug info */}
       {error && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-destructive/50 bg-destructive/5">
           <CardContent className="pt-4">
-            <p className="text-red-600">Error loading documents: {error.message}</p>
+            <p className="text-destructive">Error loading documents: {error.message}</p>
             <Button onClick={() => refetch()} variant="outline" size="sm" className="mt-2">
               Retry
             </Button>
@@ -225,7 +225,7 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   data-testid="search-documents"
                 />
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               </div>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-48">
@@ -273,7 +273,7 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
                 <div
                   key={category.name}
                   className={`border rounded-lg p-4 hover:border-primary/40 transition-colors cursor-pointer ${
-                    isSelected ? 'border-primary bg-primary/5' : 'bg-gray-50 border-gray-200'
+                    isSelected ? 'border-primary bg-primary/5' : 'bg-card border-border'
                   }`}
                   onClick={() => setSelectedCategory(isSelected ? "all" : category.name)}
                   data-testid={`category-${category.name.toLowerCase().replace(/\s+/g, '-')}`}
@@ -283,8 +283,8 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
                       <IconComponent className={`h-6 w-6 ${category.color}`} />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900 text-sm">{category.name}</h3>
-                      <p className="text-sm text-gray-500">{category.count} items</p>
+                      <h3 className="font-medium text-foreground text-sm">{category.name}</h3>
+                      <p className="text-sm text-muted-foreground">{category.count} items</p>
                     </div>
                   </div>
                 </div>
@@ -295,7 +295,7 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
           {/* Documents List */}
           {filteredDocuments.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3 className="text-lg font-medium text-foreground mb-4">
                 {selectedCategory === "all" ? "All Documents" : selectedCategory}
               </h3>
               
@@ -305,30 +305,30 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
                     <div key={doc.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center">
-                          <FileType className="h-8 w-8 text-gray-400 mr-3" />
+                          <FileType className="h-8 w-8 text-muted-foreground mr-3" />
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium truncate">{doc.name}</h4>
-                            <p className="text-sm text-gray-500 truncate">{doc.fileName}</p>
+                            <p className="text-sm text-muted-foreground truncate">{doc.fileName}</p>
                           </div>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => deleteDocumentMutation.mutate(doc.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-destructive hover:text-destructive/80"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                       
-                      <div className="space-y-2 text-sm text-gray-500">
+                      <div className="space-y-2 text-sm text-muted-foreground">
                         <div className="flex items-center justify-between">
                           <span>Category</span>
                           <Badge variant="secondary" className="text-xs">{doc.category}</Badge>
                         </div>
                         <div className="flex items-center justify-between">
                           <span>Date</span>
-                          <span>{new Date(doc.uploadDate).toLocaleDateString()}</span>
+                          <span>{doc.uploadDate ? new Date(doc.uploadDate).toLocaleDateString() : 'N/A'}</span>
                         </div>
                       </div>
                     </div>
@@ -337,24 +337,24 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
               ) : (
                 <div className="space-y-2">
                   {filteredDocuments.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                    <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
                       <div className="flex items-center">
-                        <FileType className="h-6 w-6 text-gray-400 mr-3" />
+                        <FileType className="h-6 w-6 text-muted-foreground mr-3" />
                         <div className="flex-1">
                           <h4 className="font-medium">{doc.name}</h4>
-                          <p className="text-sm text-gray-500">{doc.fileName}</p>
+                          <p className="text-sm text-muted-foreground">{doc.fileName}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <Badge variant="secondary">{doc.category}</Badge>
-                        <span className="text-sm text-gray-500">
-                          {new Date(doc.uploadDate).toLocaleDateString()}
+                        <span className="text-sm text-muted-foreground">
+                          {doc.uploadDate ? new Date(doc.uploadDate).toLocaleDateString() : 'N/A'}
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => deleteDocumentMutation.mutate(doc.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-destructive hover:text-destructive/80"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -369,11 +369,11 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
           {/* Empty State */}
           {filteredDocuments.length === 0 && (
             <div className="text-center py-8 mb-6">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 {searchQuery || selectedCategory !== "all" ? "No documents found" : "No documents yet"}
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {searchQuery || selectedCategory !== "all" 
                   ? "Try adjusting your search or filters" 
                   : "Upload your first document to get started"}
@@ -386,15 +386,15 @@ export default function DocumentsTab({ employeeId }: DocumentsTabProps) {
           )}
 
           {/* File Upload Area */}
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary/40 transition-colors">
-            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Drag and drop files to upload</h3>
-            <p className="text-gray-500 mb-4">or click to browse files</p>
+          <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/40 transition-colors">
+            <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">Drag and drop files to upload</h3>
+            <p className="text-muted-foreground mb-4">or click to browse files</p>
             <Button onClick={() => setShowUploadDialog(true)} data-testid="button-browse-files">
               Browse Files
             </Button>
             <div className="mt-4 text-center">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 {documentCategories.length} categories available
               </span>
             </div>

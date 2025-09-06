@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,10 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { apiRequest } from "@/lib/queryClient";
-import { Calendar, Plus, Save, X, Edit, AlertCircle, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Plus, Save, X, Edit, AlertCircle, CheckCircle } from "lucide-react";
 import type { TimeOff, InsertTimeOff } from "@shared/schema";
 
 interface TimeOffTabProps {
@@ -20,11 +21,7 @@ interface ValidationErrors {
   [key: string]: string;
 }
 
-interface TimeOffBalance {
-  vacation: number;
-  sick: number;
-  personal: number;
-}
+
 
 // Validation functions
 const validateDate = (date: string): boolean => {
@@ -73,20 +70,14 @@ const formatDateForDisplay = (dateString: string): string => {
 export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const formRef = useRef<HTMLDivElement>(null);
   
   // Form states
   const [showTimeOffForm, setShowTimeOffForm] = useState(false);
   const [editingTimeOff, setEditingTimeOff] = useState<TimeOff | null>(null);
   const [formData, setFormData] = useState<Partial<InsertTimeOff>>({});
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+
   
-  // Time off balance state (this would normally come from an API)
-  const [timeOffBalance] = useState<TimeOffBalance>({
-    vacation: 15.5,
-    sick: 8.0,
-    personal: 3.0
-  });
 
   const { data: timeOff = [], isLoading } = useQuery<TimeOff[]>({
     queryKey: ["/api/employees", employeeId, "time-off"],
@@ -272,15 +263,6 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
     });
     setShowTimeOffForm(true);
     setValidationErrors({});
-    
-    // Scroll to form after a short delay to ensure it's rendered
-    setTimeout(() => {
-      formRef.current?.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start',
-        inline: 'nearest'
-      });
-    }, 100);
   };
 
   const handleNewRequest = () => {
@@ -292,15 +274,6 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
       endDate: today
     }); // Default status and current date
     setShowTimeOffForm(true);
-    
-    // Scroll to form after a short delay to ensure it's rendered
-    setTimeout(() => {
-      formRef.current?.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start',
-        inline: 'nearest'
-      });
-    }, 100);
   };
 
   // Enhanced time off columns with actions
@@ -336,22 +309,20 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
         const getStatusConfig = (status: string) => {
           switch (status) {
             case "Approved":
-              return { bg: "bg-green-100", text: "text-green-800", icon: CheckCircle };
+              return { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" };
             case "Pending":
-              return { bg: "bg-yellow-100", text: "text-yellow-800", icon: Clock };
+              return { bg: "bg-yellow-50", text: "text-yellow-700", border: "border-yellow-200" };
             case "Denied":
-              return { bg: "bg-red-100", text: "text-red-800", icon: XCircle };
+              return { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" };
             default:
-              return { bg: "bg-gray-100", text: "text-gray-800", icon: Clock };
+              return { bg: "bg-gray-50", text: "text-gray-700", border: "border-gray-200" };
           }
         };
         
         const config = getStatusConfig(value);
-        const Icon = config.icon;
         
         return (
-          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
-            <Icon className="h-3 w-3 mr-1" />
+          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>
             {value}
           </span>
         );
@@ -361,7 +332,7 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
       key: "comment" as keyof TimeOff, 
       header: "Comment",
       render: (value: string) => (
-        <span className="text-sm text-gray-600 max-w-xs truncate" title={value}>
+        <span className="text-sm text-muted-foreground max-w-xs truncate" title={value}>
           {value || "—"}
         </span>
       ),
@@ -386,51 +357,17 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
-      {/* Time Off Balance */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Calendar className="h-5 w-5 mr-2 text-primary" />
-            Time Off Balance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
-              <h3 className="text-sm font-medium text-blue-700 mb-2">Vacation</h3>
-              <div className="text-3xl font-bold text-blue-900">{timeOffBalance.vacation}</div>
-              <div className="text-sm text-blue-600">days available</div>
-            </div>
-            <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
-              <h3 className="text-sm font-medium text-green-700 mb-2">Sick Leave</h3>
-              <div className="text-3xl font-bold text-green-900">{timeOffBalance.sick}</div>
-              <div className="text-sm text-green-600">days available</div>
-            </div>
-            <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
-              <h3 className="text-sm font-medium text-purple-700 mb-2">Personal</h3>
-              <div className="text-3xl font-bold text-purple-900">{timeOffBalance.personal}</div>
-              <div className="text-sm text-purple-600">days available</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Time Off Request Form */}
-      {showTimeOffForm && (
-        <Card ref={formRef}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center">
-                <Plus className="h-5 w-5 mr-2 text-primary" />
-                {editingTimeOff ? "Edit Time Off Request" : "New Time Off Request"}
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={resetForm}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Time Off Request Modal */}
+      <Dialog open={showTimeOffForm} onOpenChange={setShowTimeOffForm}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Plus className="h-5 w-5 mr-2 text-primary" />
+              {editingTimeOff ? "Edit Time Off Request" : "New Time Off Request"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Type */}
               <div className="space-y-2">
                 <Label htmlFor="type">Type *</Label>
@@ -452,10 +389,10 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
                   </SelectContent>
                 </Select>
                 {validationErrors.type && (
-                  <div className="flex items-center text-sm text-red-600">
+                  <p className="text-sm text-destructive mt-1 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-1" />
                     {validationErrors.type}
-                  </div>
+                  </p>
                 )}
               </div>
 
@@ -476,85 +413,55 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
                   </SelectContent>
                 </Select>
                 {validationErrors.status && (
-                  <div className="flex items-center text-sm text-red-600">
+                  <p className="text-sm text-destructive mt-1 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-1" />
                     {validationErrors.status}
-                  </div>
+                  </p>
                 )}
               </div>
 
               {/* Start Date */}
               <div className="space-y-2">
                 <Label htmlFor="startDate" className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                   Start Date *
                 </Label>
-                <div className="relative">
-                  <Input
-                    ref={(el) => { if (el) (el as any).startDateRef = el; }}
-                    id="startDate"
-                    type="date"
-                    value={formData.startDate || ""}
-                    onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-                    className={`${validationErrors.startDate ? "border-red-500" : ""} pl-10 cursor-pointer`}
-                    min={new Date().toISOString().split('T')[0]} // Prevent selecting past dates
-                  />
-                  <Calendar 
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer hover:text-blue-500 transition-colors" 
-                    onClick={() => {
-                      const input = document.getElementById('startDate') as HTMLInputElement;
-                      if (input) {
-                        input.focus();
-                        input.showPicker?.();
-                      }
-                    }}
-                    title="Click to open calendar"
-                  />
-                </div>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={formData.startDate || ""}
+                  onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                  className={validationErrors.startDate ? "border-red-500" : ""}
+                  min={new Date().toISOString().split('T')[0]} // Prevent selecting past dates
+                />
                 {validationErrors.startDate && (
-                  <div className="flex items-center text-sm text-red-600">
+                  <p className="text-sm text-destructive mt-1 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-1" />
                     {validationErrors.startDate}
-                  </div>
+                  </p>
                 )}
               </div>
 
               {/* End Date */}
               <div className="space-y-2">
                 <Label htmlFor="endDate" className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                   End Date *
                 </Label>
-                <div className="relative">
-                  <Input
-                    ref={(el) => { if (el) (el as any).endDateRef = el; }}
-                    id="endDate"
-                    type="date"
-                    value={formData.endDate || ""}
-                    onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                    className={`${validationErrors.endDate ? "border-red-500" : ""} pl-10 cursor-pointer`}
-                    min={formData.startDate || new Date().toISOString().split('T')[0]} // Prevent selecting dates before start date
-                  />
-                  <Calendar 
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer hover:text-blue-500 transition-colors" 
-                    onClick={() => {
-                      const input = document.getElementById('endDate') as HTMLInputElement;
-                      if (input) {
-                        input.focus();
-                        input.showPicker?.();
-                      }
-                    }}
-                    title="Click to open calendar"
-                  />
-                </div>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={formData.endDate || ""}
+                  onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                  className={validationErrors.endDate ? "border-red-500" : ""}
+                  min={formData.startDate || new Date().toISOString().split('T')[0]} // Prevent selecting dates before start date
+                />
                 {validationErrors.endDate && (
-                  <div className="flex items-center text-sm text-red-600">
+                  <p className="text-sm text-destructive mt-1 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-1" />
                     {validationErrors.endDate}
-                  </div>
+                  </p>
                 )}
                 {(formData.startDate && formData.endDate && validateDateRange(formData.startDate, formData.endDate)) && (
-                  <div className="flex items-center text-sm text-blue-600">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4 mr-1" />
                     Date range: {formatDateForDisplay(formData.startDate)} - {formatDateForDisplay(formData.endDate)}
                   </div>
@@ -562,32 +469,27 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
               </div>
 
               {/* Days */}
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="days">Number of Days (Auto-calculated)</Label>
-                <div className="relative">
-                  <Input
-                    id="days"
-                    type="text"
-                    value={formData.days ? `${parseFloat(formData.days).toFixed(1)} day${parseFloat(formData.days) === 1 ? '' : 's'}` : "Select dates to calculate"}
-                    readOnly
-                    className="bg-gray-50 cursor-not-allowed font-mono"
-                    placeholder="Select start and end dates"
-                  />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <span className="text-xs text-gray-500">Auto</span>
-                  </div>
-                </div>
+                <Input
+                  id="days"
+                  type="text"
+                  value={formData.days ? `${parseFloat(formData.days).toFixed(1)} day${parseFloat(formData.days) === 1 ? '' : 's'}` : "Select dates to calculate"}
+                  readOnly
+                  className="bg-muted cursor-not-allowed font-mono"
+                  placeholder="Select start and end dates"
+                />
                 {(formData.startDate && formData.endDate && formData.days) && (
-                  <div className="flex items-center text-sm text-green-600">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <CheckCircle className="h-4 w-4 mr-1" />
                     Calculated from {formatDateForDisplay(formData.startDate)} to {formatDateForDisplay(formData.endDate)}
                   </div>
                 )}
                 {validationErrors.general && (
-                  <div className="flex items-center text-sm text-red-600">
+                  <p className="text-sm text-destructive mt-1 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-1" />
                     {validationErrors.general}
-                  </div>
+                  </p>
                 )}
               </div>
             </div>
@@ -605,42 +507,40 @@ export default function TimeOffTab({ employeeId }: TimeOffTabProps) {
             </div>
 
             {/* Form Actions */}
-            <div className="flex items-center space-x-3 pt-4 border-t">
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={resetForm}>
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
               <Button 
                 onClick={handleSubmit}
                 disabled={createTimeOffMutation.isPending || updateTimeOffMutation.isPending}
-                className="flex items-center"
               >
                 <Save className="h-4 w-4 mr-2" />
                 {editingTimeOff ? "Update Request" : "Submit Request"}
               </Button>
-              <Button variant="outline" onClick={resetForm}>
-                Cancel
-              </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      {/* Request Time Off Button (when form is hidden) */}
-      {!showTimeOffForm && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Request Time Off</CardTitle>
-              <Button onClick={handleNewRequest} data-testid="button-new-request">
-                <Plus className="h-4 w-4 mr-2" />
-                New Request
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm text-gray-500">
-              Click "New Request" to submit a time off request with all required details.
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Request Time Off Button */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Request Time Off</CardTitle>
+            <Button onClick={handleNewRequest} size="sm" data-testid="button-new-request">
+              <Plus className="h-4 w-4 mr-2" />
+              New Request
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-muted-foreground">
+            Click "New Request" to submit a time off request with all required details.
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Time Off History */}
       <Card>
