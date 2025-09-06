@@ -8,8 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { GraduationCap, Plus, Edit, Trash2, CheckCircle, AlertTriangle } from "lucide-react";
+import { GraduationCap, Plus, Edit, Trash2, CheckCircle, AlertTriangle, Calendar as CalendarIcon } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { cn } from "@/lib/utils";
 import type { Training, InsertTraining } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -24,6 +28,10 @@ export default function TrainingTab({ employeeId }: TrainingTabProps) {
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
   const [sortBy, setSortBy] = useState<"most-recent" | "oldest-first" | "alphabetical">("most-recent");
   const [yearFilter, setYearFilter] = useState<"all" | string>("2025");
+
+  // Date picker states
+  const [trainingDueDate, setTrainingDueDate] = useState<Date>();
+  const [trainingCompletedDate, setTrainingCompletedDate] = useState<Date>();
 
   // Helper function to check if training has date violations
   const hasDateViolation = (training: Training) => {

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { apiRequest } from "@/lib/queryClient";
@@ -51,11 +52,11 @@ export default function JobTab({ employeeId }: JobTabProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Form states
-  const [showEmploymentForm, setShowEmploymentForm] = useState(false);
-  const [showCompensationForm, setShowCompensationForm] = useState(false);
-  const [showBonusForm, setShowBonusForm] = useState(false);
-  const [showJobInfoForm, setShowJobInfoForm] = useState(false);
+  // Dialog states
+  const [showEmploymentDialog, setShowEmploymentDialog] = useState(false);
+  const [showCompensationDialog, setShowCompensationDialog] = useState(false);
+  const [showBonusDialog, setShowBonusDialog] = useState(false);
+  const [showJobInfoDialog, setShowJobInfoDialog] = useState(false);
   
   // Edit states
   const [editingEmployment, setEditingEmployment] = useState<EmploymentHistory | null>(null);
@@ -121,7 +122,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
       await queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId, "employment-history"] });
       await queryClient.refetchQueries({ queryKey: ["/api/employees", employeeId, "employment-history"] });
       toast({ title: "Success", description: "Employment history added successfully" });
-      setShowEmploymentForm(false);
+      setShowEmploymentDialog(false);
       setEmploymentFormData({});
       setEmploymentErrors({});
     },
@@ -142,7 +143,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
       await queryClient.refetchQueries({ queryKey: ["/api/employees", employeeId, "employment-history"] });
       toast({ title: "Success", description: "Employment history updated successfully" });
       setEditingEmployment(null);
-      setShowEmploymentForm(false);
+      setShowEmploymentDialog(false);
       setEmploymentFormData({});
       setEmploymentErrors({});
     },
@@ -178,7 +179,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
       await queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId, "compensation"] });
       await queryClient.refetchQueries({ queryKey: ["/api/employees", employeeId, "compensation"] });
       toast({ title: "Success", description: "Compensation added successfully" });
-      setShowCompensationForm(false);
+      setShowCompensationDialog(false);
       setCompensationFormData({});
       setCompensationErrors({});
     },
@@ -197,7 +198,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
       await queryClient.refetchQueries({ queryKey: ["/api/employees", employeeId, "compensation"] });
       toast({ title: "Success", description: "Compensation updated successfully" });
       setEditingCompensation(null);
-      setShowCompensationForm(false);
+      setShowCompensationDialog(false);
       setCompensationFormData({});
       setCompensationErrors({});
     },
@@ -233,7 +234,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
       await queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId, "bonuses"] });
       await queryClient.refetchQueries({ queryKey: ["/api/employees", employeeId, "bonuses"] });
       toast({ title: "Success", description: "Bonus added successfully" });
-      setShowBonusForm(false);
+      setShowBonusDialog(false);
       setBonusFormData({});
       setBonusErrors({});
     },
@@ -252,7 +253,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
       await queryClient.refetchQueries({ queryKey: ["/api/employees", employeeId, "bonuses"] });
       toast({ title: "Success", description: "Bonus updated successfully" });
       setEditingBonus(null);
-      setShowBonusForm(false);
+      setShowBonusDialog(false);
       setBonusFormData({});
       setBonusErrors({});
     },
@@ -288,7 +289,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
       await queryClient.invalidateQueries({ queryKey: ["/api/employees", employeeId] });
       await queryClient.refetchQueries({ queryKey: ["/api/employees", employeeId] });
       toast({ title: "Success", description: "Job information updated successfully" });
-      setShowJobInfoForm(false);
+      setShowJobInfoDialog(false);
       setJobInfoErrors({});
     },
     onError: (error) => {
@@ -449,45 +450,45 @@ export default function JobTab({ employeeId }: JobTabProps) {
   const handleEditEmployment = (employment: EmploymentHistory) => {
     setEditingEmployment(employment);
     setEmploymentFormData(employment);
-    setShowEmploymentForm(true);
+    setShowEmploymentDialog(true);
   };
 
   const handleEditCompensation = (comp: Compensation) => {
     setEditingCompensation(comp);
     setCompensationFormData(comp);
-    setShowCompensationForm(true);
+    setShowCompensationDialog(true);
   };
 
   const handleEditBonus = (bonus: Bonus) => {
     setEditingBonus(bonus);
     setBonusFormData(bonus);
-    setShowBonusForm(true);
+    setShowBonusDialog(true);
   };
 
   // Cancel handlers
   const handleCancelEmploymentForm = () => {
-    setShowEmploymentForm(false);
+    setShowEmploymentDialog(false);
     setEditingEmployment(null);
     setEmploymentFormData({});
     setEmploymentErrors({});
   };
 
   const handleCancelCompensationForm = () => {
-    setShowCompensationForm(false);
+    setShowCompensationDialog(false);
     setEditingCompensation(null);
     setCompensationFormData({});
     setCompensationErrors({});
   };
 
   const handleCancelBonusForm = () => {
-    setShowBonusForm(false);
+    setShowBonusDialog(false);
     setEditingBonus(null);
     setBonusFormData({});
     setBonusErrors({});
   };
 
   const handleCancelJobInfoForm = () => {
-    setShowJobInfoForm(false);
+    setShowJobInfoDialog(false);
     setJobInfoErrors({});
     // Reset form data to original employee data
     if (employee) {
@@ -547,7 +548,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
               Current Job Information
             </CardTitle>
             <Button 
-              onClick={() => setShowJobInfoForm(true)} 
+              onClick={() => setShowJobInfoDialog(true)} 
               size="sm" 
               variant="outline"
               data-testid="button-edit-job-info"
@@ -695,7 +696,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
               Employment History
             </CardTitle>
             <div className="flex space-x-2">
-              <Button onClick={() => setShowEmploymentForm(true)} size="sm" data-testid="button-add-employment-history">
+              <Button onClick={() => setShowEmploymentDialog(true)} size="sm" data-testid="button-add-employment-history">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Entry
               </Button>
@@ -703,15 +704,13 @@ export default function JobTab({ employeeId }: JobTabProps) {
           </div>
         </CardHeader>
         <CardContent>
-          {!showEmploymentForm ? (
-            <DataTable
-              columns={employmentHistoryColumns}
-              data={employmentHistory}
-              onEdit={handleEditEmployment}
-              onDelete={(item) => deleteEmploymentHistoryMutation.mutate(item.id!)}
-              emptyMessage="No employment history available"
-            />
-          ) : (
+          <DataTable
+            columns={employmentHistoryColumns}
+            data={employmentHistory}
+            onEdit={handleEditEmployment}
+            onDelete={(item) => deleteEmploymentHistoryMutation.mutate(item.id!)}
+            emptyMessage="No employment history available"
+          />
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -870,7 +869,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
               Compensation
             </CardTitle>
             <div className="flex space-x-2">
-              <Button onClick={() => setShowCompensationForm(true)} size="sm" data-testid="button-add-compensation">
+              <Button onClick={() => setShowCompensationDialog(true)} size="sm" data-testid="button-add-compensation">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Entry
               </Button>
@@ -1024,7 +1023,7 @@ export default function JobTab({ employeeId }: JobTabProps) {
               Bonus Information
             </CardTitle>
             <div className="flex space-x-2">
-              <Button onClick={() => setShowBonusForm(true)} size="sm" data-testid="button-add-bonus">
+              <Button onClick={() => setShowBonusDialog(true)} size="sm" data-testid="button-add-bonus">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Entry
               </Button>
